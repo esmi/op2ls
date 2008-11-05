@@ -1,0 +1,2 @@
+#echo $*
+eval  '$* 2>&1 | ~/utils/b5utf8'
