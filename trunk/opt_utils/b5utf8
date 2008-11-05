@@ -1,0 +1,3 @@
+#!/bin/bash
+
+piconv -f big5 -t utf-8

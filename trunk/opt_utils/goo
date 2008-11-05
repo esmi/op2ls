@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#browser=lynx
+browser=w3m
+prg=`echo $0 | sed 's/.*\///g'`
+
+#echo $#
+#echo $?
+
+while [ -n "$1" ] ;
+do
+   if [ -n "$a" ] ; then
+     a=$a'+'$1
+   else
+     a=$1
+   fi
+   shift
+done
+
+#echo $a
+a='http://www.google.com.tw/search?sourceid=navclient&hl=zh-TW&q='$a
+#echo $a
+if [ $prg. == goo. ] ; then
+   #$browser -cookies "$a"
+   #echo $browser -cookies "$a"
+   $browser "$a"
+else
+   $browser "$a"
+fi
