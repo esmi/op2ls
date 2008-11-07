@@ -1,4 +1,5 @@
 
+OPT_DEV="OPT_DEV"
 WEBTAR_D=`pwd`/webtar
 BIN_D=`pwd`/bin
 TMP_D=`pwd`/tmp

@@ -11,7 +11,17 @@ mkdir -p $TMP_D
 
 TMP=/tmp
 
-./pcainfo.sh
-./zh-autoconvert.sh
-./js-mod.sh
-./ydict.sh
+
+if [ "$1". == "". ] ; then
+   ./pcainfo.sh
+   ./zh-autoconvert.sh
+   ./js-mod.sh
+   ./ydict.sh
+else
+
+   if [ -e ./"$1" ] ; then
+	. ./"$1"
+   else
+	echo Build script $1 not found.
+   fi
+fi
