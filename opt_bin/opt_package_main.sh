@@ -26,13 +26,14 @@ function package_main()
 	echo RUN $run_function
 	$run_function
 
-	if [ -e $WORK_D ] && [ "$OPT_CLEAR_WORK_D". == "CLEAR". ] ; then
+	popd
+
+	if [ -e $WORK_D ] && [ "$OPT_CLEAR_WORK_D". == "CLEAR". ] && [ ! "$DELETE_WORK_D". == "no". ]; then
 		
 		echo CLEAR $WORK_D DIRECTORY
 		rm -rf $WORK_D
 		
 	fi
-	popd
    fi
 }
 
