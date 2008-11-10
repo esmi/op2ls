@@ -1,0 +1,11 @@
+
+#cd $HOME
+
+if [ -e /etc/bash.bashrc ] ; then
+   source /etc/bash.bashrc 	#> ~/.etc.bashrc.log
+fi
+
+cd $HOME
+
+
+

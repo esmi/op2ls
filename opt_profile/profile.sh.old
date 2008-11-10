@@ -1,0 +1,87 @@
+
+PATH=$HOME/bin:$HOME/scripts/:/bin:"$PATH"
+
+ETC_D=$HOME/opt/etc
+PROFILE_PATH=$HOME/opt/profile
+PKG_PATH=$PROFILE_PATH/pkg
+
+#.  $PROFILE_PATH/create-links/create-profile-links.sh
+
+if [  -e $PROFILE_PATH/keychain.sh ] ; then
+
+    .  $PROFILE_PATH/keychain.sh
+
+fi
+
+.  $PROFILE_PATH/i18n
+
+
+if [ $OSTYPE. == cygwin. ] ; then
+
+   TRANSPATH="cygpath -w"
+   POSIXPATH="cygpath "
+
+   export USERHOME=`cygpath -u "$HOMEDRIVE/users/$USERNAME"`
+
+   # XP
+   # desktop="/cygdrive/c/Documents and Settings/$USERNAME/桌面"
+   # VISTA
+   desktop="$USERHOME/Desktop"
+   export desktop
+
+   . $PROFILE_PATH/cygwin/cron-check.sh
+   
+#   . $PROFILE_PATH/qcon/qcontrol.sh
+#   . $PROFILE_PATH/winapps/mssql-setup.sh
+#   . $PROFILE_PATH/winapps/console.sh
+#   . $PROFILE_PATH/winapps/workflow-erp.sh
+#   . $PROFILE_PATH/winapps/ef.sh
+#   . $PROFILE_PATH/dotnet-framework/dotnet-framework.sh
+
+   winsysdir=`cygpath 'c:\WINDOWS\system32'`
+   alias winsysdir='cd "$winsysdir"'
+
+   
+   sharedocs="/cygdrive/c/Documents and Settings/All Users/Documents"
+#   TOMCAT=`cygpath -u c:/tomcat-4.1`
+else
+   TRANSPATH="echo "
+   POSIXPATH="echo "
+   
+   PATH=/sbin:/usr/sbin:/usr/local/sbin:$PATH
+   export PATH
+
+   desktop="$HOME/Desktop"
+   export desktop
+   
+#   TOMCAT=/usr/local/tomcat
+
+   #kde-`hostname`.sh created by "create-remote-host-specified.sh"
+   . $PROFILE_PATH/linux/kde-`hostname`.sh
+
+fi
+
+#.  $PKG_PATH/java-profile.sh
+.  $PKG_PATH/clip-profile.sh
+.  $ETC_D/${HOSTNAME}-data-setup.sh
+
+if [ -e  $HOME/scripts/properties/${USER}-user-setup.sh ] ; then
+   .  $HOME/scripts/properties/${USER}-user-setup.sh
+fi
+
+.  $PKG_PATH/latex-setup.sh
+
+.  $PROFILE_PATH/common-setup.sh
+
+.  $PROFILE_PATH/scripts/profile.sh
+
+PATH=$HOME/opt/utils:$HOME/opt/bin:$HOME/opt/lnks:$PATH
+
+#if [ -e /etc/bash.bashrc ] ; then
+#   source /etc/bash.bashrc
+#fi
+
+if [ -e ~/.bashrc ] ; then
+   source ~/.bashrc
+fi
+
