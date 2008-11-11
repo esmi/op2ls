@@ -7,7 +7,7 @@ PROENV_D=$HOME/opt
 DATA_ENV_D=$HOME/opt/profile/data_env.d
 PROFILE_ENV_D=$HOME/opt/profile/profile_env.d
 PACKAGE_ENV_D=$HOME/opt/profile/package_env.d
-
+JAVA_ENV_D=$HOME/opt/profile/java_env.d
 if [ -e ~/.bashrc ] ; then
    source ~/.bashrc
 fi
