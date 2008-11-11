@@ -59,15 +59,6 @@ export JAVA_APPS JAPPS
 
 PATH=$PATH:`$POSIXPATH $JAVA_HOME/bin`
 
-. $HOME/scripts/profile/java/classpath.sh
-. $HOME/scripts/profile/java/tomcat.sh
-. $HOME/scripts/profile/java/axis.sh
-. $HOME/scripts/profile/java/ant.sh
-. $HOME/scripts/profile/java/jboss.sh
-. $HOME/scripts/profile/java/mssql2000.sh
-. $HOME/scripts/profile/java/eclipse.sh
-
-
 # JAVA RELATIVE ENVIRONMENT...
 alias java='java -classpath "$WIN_CLASSPATH"'
 
