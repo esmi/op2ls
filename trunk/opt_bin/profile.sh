@@ -17,7 +17,7 @@ get_profile() {
   fi
   popd
 
-  mkdir $PROFILE_D
+  mkdir -p $PROFILE_D
 
   tar -xz --directory $PROFILE_D -f  $WORK_TAR
 
@@ -31,7 +31,7 @@ get_profile() {
 
 }
 
-DLETE_WORK_D="no"
+DELETE_WORK_D="no"
 
 . opt_package_main.sh
 
