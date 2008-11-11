@@ -23,7 +23,7 @@ for  package_file  in "$PACKAGE_ENV_D"/*.sh ; do
 done
 
 for  javaenv_file  in "$JAVA_ENV_D"/*.sh ; do
-    echo '>>>>> PACKAGE: ' $javaenv_file ...
+    echo '>>>>> JAVA: ' $javaenv_file ...
     source $javaenv_file
 done
 
