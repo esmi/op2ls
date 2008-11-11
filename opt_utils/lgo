@@ -1,0 +1,25 @@
+#!/bin/bash
+
+prg=`echo $0 | sed 's/.*\///g'`
+
+#echo $#
+#echo $?
+
+while [ -n "$1" ] ;
+do
+   if [ -n "$a" ] ; then
+     a="$a"'+'"$1"
+   else
+     a=$1
+   fi
+   shift
+done
+
+#echo $a
+a='http://www.google.com.tw/search?sourceid=navclient&hl=zh-TW&q='$a
+#echo $a
+if [ $prg. == goo. ] ; then
+   links "$a"
+else
+   lynx -cookies "$a"
+fi
