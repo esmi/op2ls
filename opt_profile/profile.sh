@@ -22,6 +22,11 @@ for  package_file  in "$PACKAGE_ENV_D"/*.sh ; do
     source $package_file
 done
 
+for  javaenv_file  in "$JAVA_ENV_D"/*.sh ; do
+    echo '>>>>> PACKAGE: ' $javaenv_file ...
+    source $javaenv_file
+done
+
 #.  $PKGENV_D/java-profile.sh
 
 for data_file in "$DATA_ENV_D"/*.sh; do
