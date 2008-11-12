@@ -1,6 +1,6 @@
 
 
-PATH=$HOME/bin:$HOME/scripts/:/bin:"$PATH"
+PATH=$HOME/bin:/bin:"$PATH"
 
 ETC_D=$HOME/opt/etc
 PROENV_D=$HOME/opt
@@ -34,6 +34,6 @@ for data_file in "$DATA_ENV_D"/*.sh; do
     source $data_file
 done
 
-PATH=$HOME/opt/utils:$HOME/opt/bin:$HOME/opt/lnks:$PATH
+PATH=$HOME/opt/utils:$HOME/opt/bin:$HOME/opt/ln:$PATH
 
 
