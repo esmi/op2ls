@@ -20,8 +20,10 @@ if [ "$acc". == "yes". ]; then
 
      svn co $HTTP/opt_bin opt_bin
      svn co $HTTP/opt_utils opt_utils
+     svn co $HTTP/opt_profile opt_profile
     
      cd opt_bin
+
      ./build.sh
 
      popd 
