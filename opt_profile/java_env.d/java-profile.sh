@@ -45,7 +45,7 @@ fi
 
 ANT_HOME=$ANT_HOME_PREFIX/ant
 
-JAVA_HOME=`$TRANSPATH $JAVA_HOME_PREFIX/$JDK_PATH`
+#JAVA_HOME=`$TRANSPATH $JAVA_HOME_PREFIX/$JDK_PATH`
 
 #echo JAVA_HOME: $JAVA_HOME
 
@@ -54,7 +54,7 @@ if [ ! $CATALINA_HOME. = . ] ; then
 fi
 
 APPS=$JAVA_APPS
-export ANT_HOME JAVA_HOME CATALINA_HOME
+#export ANT_HOME JAVA_HOME CATALINA_HOME
 export JAVA_APPS JAPPS
 
 PATH=$PATH:`$POSIXPATH $JAVA_HOME/bin`
@@ -76,13 +76,13 @@ alias webapps='cd "$TOMCAT"/webapps/'
 alias jportal='cd $HOME/jportal'
 
 
-if [ $OSTYPE. != cygwin. ] ; then
+#if [ $OSTYPE. != cygwin. ] ; then
 
-   CLASSPATH=`echo $CLASSPATH | sed 's/;/:/g'`
-else
+#   CLASSPATH=`echo $CLASSPATH | sed 's/;/:/g'`
+#else
 
-   WIN_CLASSPATH=$CLASSPATH';.\easynoter-0.1.1.jar'
-   CYGWIN_CLASSPATH=$(echo $WIN_CLASSPATH | tr '\\' '\/' | sed "s/[cC]:/\/cygdrive\/c/g" | tr ';' ':')
-   export WIN_CLASSPATH CYGWIN_CLASSPATH
-fi
+#   WIN_CLASSPATH=$CLASSPATH';.\easynoter-0.1.1.jar'
+#   CYGWIN_CLASSPATH=$(echo $WIN_CLASSPATH | tr '\\' '\/' | sed "s/[cC]:/\/cygdrive\/c/g" | tr ';' ':')
+#   export WIN_CLASSPATH CYGWIN_CLASSPATH
+#fi
 

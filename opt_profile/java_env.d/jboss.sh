@@ -16,7 +16,7 @@ export JBOSS_HOME JBOSS_DEPLOY JBOSS_SERVER
 
 # $JBOSS_CLIENT/jbossall-client.jar 此檔案包含所有client所需的classes.
 
-CLASSPATH="$CLASSPATH"';'`$TRANSPATH $JBOSS_CLIENT/jbossall-client.jar`
+#CLASSPATH="$CLASSPATH"';'`$TRANSPATH $JBOSS_CLIENT/jbossall-client.jar`
 
 
 alias jboss_start='$JBOSS_BIN/run.sh -c $JBOSS_CONFIGURATION 2>&1 > $JBOSS_BIN/run.log &'

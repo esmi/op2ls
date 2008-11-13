@@ -1,3 +1,3 @@
 
 
-export JAVA_HOME=/usr/java/j2sdk
+export JAVA_HOME=/usr/java/home
