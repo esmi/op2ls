@@ -1,15 +1,13 @@
 #!/bin/bash
-BUILD_ROOT=op2ls.d
 
-read -p "This script will download op2ls tools to your ~/opt/bin ~/opt/utils [yes/no]: " acc
+BUILD_ROOT=op2ls.d
 
 HTTP=http://op2ls.googlecode.com/svn/trunk
 
-if [ "$acc". == "yes". ]; then
-
-   read -p "Are you should to do this script! [yes/no]: " acc
+echo -p "This script will download op2ls tools to your ~/opt/bin ~/opt/utils ~/opt/profile "
+read -p "Are you should to do this script! [yes/no]: " acc
     
-   if [ "$acc". == "yes". ]; then
+if [ "$acc". == "yes". ]; then
        
      pushd `pwd`
      if [ ! -e op2ls ]; then
@@ -25,12 +23,11 @@ if [ "$acc". == "yes". ]; then
      cd opt_bin
 
      ./build.sh
-
      popd 
+
      echo ''
      echo '<<<<< Script jobs has been done!'
      echo '<<<<< You can drop work directory: '$BUILD_ROOT
      echo ''
 
-   fi
 fi
