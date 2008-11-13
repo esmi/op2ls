@@ -1,5 +1,4 @@
 
-
 PATH=$HOME/bin:/bin:"$PATH"
 
 ETC_D=$HOME/opt/etc
@@ -8,6 +7,7 @@ DATA_ENV_D=$HOME/opt/profile/data_env.d
 PROFILE_ENV_D=$HOME/opt/profile/profile_env.d
 PACKAGE_ENV_D=$HOME/opt/profile/package_env.d
 JAVA_ENV_D=$HOME/opt/profile/java_env.d
+
 if [ -e ~/.bashrc ] ; then
    source ~/.bashrc
 fi
@@ -34,6 +34,6 @@ for data_file in "$DATA_ENV_D"/*.sh; do
     source $data_file
 done
 
-PATH=$HOME/opt/utils:$HOME/opt/bin:$HOME/opt/ln:$PATH
-
+PATH=$HOME/opt/bin:$HOME/opt/ln:$HOME/opt/utils:$PATH
+export TMP=$HOME/tmp
 

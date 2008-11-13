@@ -16,8 +16,8 @@ else
 	    PATH="$ECLIPSE_HOME":$PATH
 	    export ECLIPSE_HOME
 
-	else
-	    echo ECIPSE not install on this machine ....  >> $HOME/eclipse.log
+	#else
+	#    echo ECIPSE not install on this machine ....  # >> $HOME/eclipse.log
 	fi
 
 fi

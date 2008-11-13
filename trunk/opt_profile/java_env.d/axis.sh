@@ -10,7 +10,7 @@ AXISPATH="$AXISPATH"';'`$TRANSPATH $AXIS_PREFIX/WEB-INF/lib/xerces.jar`
 AXISPATH="$AXISPATH"';'`$TRANSPATH $AXIS_PREFIX/WEB-INF/lib/wsdl4j.jar`
 
 #echo $AXISPATH
-CLASSPATH="$AXISPATH"';'"$CLASSPATH"
+#CLASSPATH="$AXISPATH"';'"$CLASSPATH"
    
 # AXIS
 alias AdminClient='java -classpath "$CLASSPATH" org.apache.axis.client.AdminClient'
