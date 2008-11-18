@@ -26,12 +26,15 @@ get_profile() {
   fi
 
   echo `pwd`
-
+  if [ "$DELETE_WORK_TAR". == "yes". ]; then
+	rm -f $WORK_TAR
+  fi
   #echo $start_line $last_line $length 
 
 }
 
-DELETE_WORK_D="no"
+DELETE_WORK_D="yes"                             # "yes" or "no"
+DELETE_WORK_TAR="yes"
 
 . opt_package_main.sh
 
