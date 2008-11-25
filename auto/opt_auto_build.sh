@@ -10,7 +10,7 @@ read -p "Are you should to do this script! [yes/no]: " acc
 if [ "$acc". == "yes". ]; then
        
      pushd `pwd`
-     if [ ! -e op2ls ]; then
+     if [ ! -e $BUILD_ROOT ]; then
 	mkdir $BUILD_ROOT
      fi
 
