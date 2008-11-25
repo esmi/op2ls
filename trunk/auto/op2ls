@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-read -p  "`basename $0` script will create a \"auto\" directory, and get files to it. [yes/no]: " acc
+read -p  "`basename $0` script will create a \"auto\" directory, and download files to it. [yes/no]: " acc
 
 if [ "$acc". == "yes". ] ; then
 
