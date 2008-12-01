@@ -1,0 +1,41 @@
+#!/bin/bash
+
+VERSION=0.1
+
+_help() {
+
+    cat <<-EOF
+	syntax: sshchk [program [parameters]]
+	sshchk: check ssh environment. if in a ssh environ it will not execute the program.
+	EOF
+}
+_version(){
+	cat <<-EOF
+		version: $VERSION
+		EOF
+}
+
+if [ "$#". ==  "0". ] ; then
+	_help
+	_version
+        exit 0
+fi
+
+case $1 in
+--help)
+	_help
+	;;
+--version)
+	_version
+	;;
+*)
+	if [ "$SSH_TTY". = "". ] && [ "$SSH_CONNECTION". == "". ] ; then
+
+		$* &
+	else
+		echo "$LOGNAME, You could't run \`$*\` program in SSH_TTY($SSH_TTY) mode !"
+		echo "Check by \``basename $0`\` shell script"
+
+	fi
+esac
+

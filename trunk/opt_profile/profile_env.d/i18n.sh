@@ -2,8 +2,15 @@
 if [ $OSTYPE. == cygwin. ] ; then
 
     if  [ ! $TERM. = cygwin. ] ; then
+
+
 	if [  $SSH_TTY. = . ] ; then
-    	    LANG="zh_TW.BIG5"
+
+	    if [ "$DISPLAY". == "". ] || [ "$DISPLAY". == ":0". ]; then
+    	        LANG="zh_TW.BIG5"
+   	    else
+		LANG=zh_TW.UTF-8
+	    fi
 	else
     	    LANG="zh_TW.UTF-8"
 	fi

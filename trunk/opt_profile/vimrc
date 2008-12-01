@@ -134,3 +134,5 @@ nmap <S-F12> :set cursorcolumn!<BAR>set nocursorcolumn?<CR>
 
 syntax on
 set background=dark 
+set softtabstop=4
+set shiftwidth=4
