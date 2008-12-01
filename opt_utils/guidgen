@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# FILE:  guidgen.sh
+# USAGE:  ./guidgen.sh 
+# DESCRIPTION:  
+#
+GUID=`uuidgen | tr a-z A-Z  | sed -e 's/^/{/g' -e 's/$/}/g'`
+
+echo $GUID
+echo $GUID | putclip 
+
+
