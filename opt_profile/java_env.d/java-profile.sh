@@ -67,9 +67,7 @@ WEBAPPS="$TOMCAT"/webapps
 alias tomcat='cd "$TOMCAT"'
 
 webapps="$TOMCAT"/webapps
-mydocs="$TOMCAT"/webapps/evan/mydocs
 
-alias mydocs='cd "$TOMCAT"/webapps/evan/mydocs'
 alias webapps='cd "$TOMCAT"/webapps/'
 
 # JPORTAL

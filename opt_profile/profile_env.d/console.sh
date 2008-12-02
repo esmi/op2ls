@@ -1,6 +1,5 @@
 
 # File Name: console.sh
-# Author: Evan Chen
 # Date: 2003/10/07
 # Docs: 此檔案被執行於shell,且與作業系統與程式有相關.
 #
