@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 ##
 ##  KeyChain.sh

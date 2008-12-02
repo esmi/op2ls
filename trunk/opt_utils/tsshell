@@ -1,0 +1,60 @@
+#!/bin/bash
+
+list() {
+    ls -l --color=never $RDP_DIR/*  | grep -i rdp$ | sed -e "s/.*\///g"
+    exit 0
+}
+
+help() {
+    cat <<-EOF
+	Usage: `basename $0` '[--help | --list | RDP file | IP]'
+
+	    --help : show usage
+	    --list : list RDP files
+	    file.RDP:
+	    IP:
+
+EOF
+    exit 0
+}
+
+RDP_DIR=$HOME/opt/profile/data_env.d/RDP
+
+#echo $#
+
+case $1 in
+    --help)
+        help
+	;;
+    --list)
+	list
+	;;
+    *) 
+	;;
+esac
+
+if [ $# -eq 0 ] ; then
+    help
+fi
+
+if [ $OSTYPE. == cygwin. ] ; then 
+   
+   TSED_HOST=$1
+
+   if test -a $RDP_DIR/$TSED_HOST ; then
+      sshchk cygstart mstsc "`cygpath -w $RDP_DIR/$TSED_HOST`"
+   else
+      sshchk cygstart mstsc /V:$TSED_HOST 
+   fi
+
+else 
+ 
+   if [ -n "$DISPLAY" ] ; then 
+
+      rdesktop  -u $TSUSER -s "$TS_SHELL" -g 700x500 $TSED_HOST &
+
+   else 
+      echo NO '$DISPLAY' setting.
+   fi
+
+fi
