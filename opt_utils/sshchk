@@ -31,11 +31,13 @@ case $1 in
 *)
 	if [ "$SSH_TTY". = "". ] && [ "$SSH_CONNECTION". == "". ] ; then
 
-		$* &
+		cygstart $* &
+		retval=`echo $?`
+		exit $retval
 	else
 		echo "You could't run \`$*\` program in SSH_TTY($SSH_TTY) mode !"
 		#echo "Check by \``basename $0`\` shell script"
-
+		exit 1
 	fi
 esac
 
