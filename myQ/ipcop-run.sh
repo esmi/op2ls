@@ -1,6 +1,8 @@
 #!/usr/bin/bash
 # this script run ipcop under qemu/cygwin/vista.
 # it lacked a function to combine "ICS/internet connection sharing" function.
+# use mktap-dev.sh to create TAP device.
+
 
 TAP_IF="TAP1"
 TAP_ADDR="192.168.100.10"

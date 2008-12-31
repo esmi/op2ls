@@ -1,0 +1,45 @@
+startup_message off
+utf8 on
+
+hardstatus alwayslastline "[%02c] %`%-w%{=b bw}%n %t%{-}%+w"
+defencoding utf-8
+encoding utf-8 utf-8
+#escape ^8
+#escape ^Aa
+vbell on
+#vbell off
+vbell_msg "ZETTAINI YURUSA NAI YO!!"
+defscrollback 2048
+#defscrollback 1000
+
+bind ^k
+bind ^¥
+bind ¥¥ quit
+bind k kill
+bind I login on
+bind O login off
+bind } history
+
+term xterm-color
+
+chdir /usr/src/opt/wl_news
+screen -t Dig_V /bin/bash --rcfile ~/.profile
+screen -t Dig_R /bin/bash --rcfile ~/.profile
+
+chdir /usr/src/qemu/ipcop
+screen -t QEMU /bin/bash  --rcfile ~/.profile
+
+chdir /usr/src/opt/op2ls
+screen -t OP2LS /bin/bash --rcfile ~/.profile
+
+chdir /usr/src/opt
+screen -t OPT /bin/bash --rcfile ~/.profile
+
+chdir /usr/src/work
+screen -t WORK /bin/bash --rcfile ~/.profile
+
+
+chdir $HOME
+screen cpan
+screen ydict
+
