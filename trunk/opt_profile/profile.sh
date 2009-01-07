@@ -1,3 +1,4 @@
+pushd `pwd`
 
 PATH=$HOME/bin:/bin:"$PATH"
 
@@ -34,6 +35,8 @@ for data_file in "$DATA_ENV_D"/*.sh; do
     source $data_file
 done
 
-PATH=$HOME/opt/bin:$HOME/opt/ln:$HOME/opt/utils:$PATH
+PATH=$HOME/opt/bin:$HOME/opt/ln:$HOME/opt/utils:$HOME/opt/wlutils:$PATH
 export TMP=$HOME/tmp
+export DATA_ENV_D
 
+popd

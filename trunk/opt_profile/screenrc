@@ -22,7 +22,7 @@ bind } history
 
 term xterm-color
 
-chdir /usr/src/opt/wl_news
+chdir /usr/src/opt/wl-news
 screen -t Dig_V /bin/bash --rcfile ~/.profile
 screen -t Dig_R /bin/bash --rcfile ~/.profile
 
