@@ -9,7 +9,7 @@ function help() {
 	This script create or remove TAP device,
 	    It require openssh tap-win32 intalld.
 
-	Usage: $0 [ create [n] | remove | help ]
+	Usage: $0 [ create [n | TAPNAME ] | remove | help ]
 	    create: create [n] TAP device, and device name is TAPx.
 	    remove: remove all TAP device.
 	EOF
@@ -19,6 +19,9 @@ function remove() {
     $TAPINSTALL remove $DEV_TYPE
     echo remove TAP devices..
 }
+
+
+#function main()
 
 case $1 in
 test)
@@ -32,18 +35,29 @@ test)
     done 
     ;;
 create)
-    START_TAP=$(expr "`netsh interface show interface | grep -i TAP |\
-		sed 's/^.*TAP/TAP/g' | sort | tail -n 1 | sed -e 's/TAP//g'`" + 1 )
-    if [ "$START_TAP". == "". ] ; then
-	START_TAP=1
-    fi
-    LAST_TAP=$(expr $2 + $START_TAP )
-    echo $START_TAP $LAST_TAP
+    expr $2 + 0
+    retval=$?
 
-    if [ ! $START_TAP -eq $LAST_TAP ] ; then
-	LAST_TAP=`expr $LAST_TAP - 1`
+    if [ $retval == 2 ]; then
+	echo TAP will rename to $2
+	DEV_NEW=$2
+	START_TAP=1
+	LAST_TAP=1
+	SPEC_NAME=1
+    else
+	START_TAP=$(expr "`netsh interface show interface | grep -i TAP |\
+			sed 's/^.*TAP/TAP/g' | sort | tail -n 1 | sed -e 's/TAP//g'`" + 1 )
+        if [ "$START_TAP". == "". ] ; then
+	   START_TAP=1
+	fi
+        LAST_TAP=$(expr $2 + $START_TAP )
+	#echo $START_TAP $LAST_TAP
+
+        if [ ! $START_TAP -eq $LAST_TAP ] ; then
+	   LAST_TAP=`expr $LAST_TAP - 1`
+	fi
+        #echo $START_TAP $LAST_TAP
     fi
-    echo $START_TAP $LAST_TAP
 
     for i in `seq $START_TAP  $LAST_TAP` ; do
 	befor_NICs=$(netsh interface show interface | expr $(wc -l) - 3 )
@@ -60,7 +74,10 @@ create)
 	#diff befor.devs after.devs
 	#DEV_NAME="`echo "$DEV_ORIG" | piconv -f UTF-8 -t big5`"
 	DEV_NAME="`diff befor.nics after.nics | tail -n 1 | sed -e 's/> //g'`"
-        DEV_NEW="TAP""`expr 100 + $i | cut -c 2,3`"
+	if [ "$SPEC_NAME". == "". ]; then
+            DEV_NEW="TAP""`expr 100 + $i | cut -c 2,3`"
+	fi
+	#echo DEV_NEW: $DEV_NAME
 
 	echo Rename device from "$DEV_NAME" to "$DEV_NEW", please wait...
         netsh interface set interface name="$DEV_NAME" newname="$DEV_NEW"

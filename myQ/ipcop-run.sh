@@ -1,10 +1,11 @@
 #!/usr/bin/bash
 # this script run ipcop under qemu/cygwin/vista.
-# it lacked a function to combine "ICS/internet connection sharing" function.
+# it lacked a function to combine "ICS/internet connection sharing" 
+#    and settup firewall function.
 # use mktap-dev.sh to create TAP device.
+#
 
-
-TAP_IF="TAP1"
+TAP_IF="TAP01"
 TAP_ADDR="192.168.100.10"
 TAP_MASK="255.255.255.0"
 MAC0=52:54:00:12:34:47
@@ -19,6 +20,15 @@ Q_IMAGE="`cygpath -w $IMAGE_PATH/$IMAGE`"
 #--- End of parameters
 IPV4_IFS="`netsh interface ipv4 show interface | d2u | tr '\n' ';'`"
 #echo $IPV4_IFS
+#Check $TAP_IF exist ? if it is not exist, execute mktap.sh
+IS_EXIST_TAP=`echo $IPV4_IFS | tr ';' '\n' | egrep -i connected |grep -i $TAP_IF`
+if [ "$IS_EXIST_TAP". == "". ] ; then
+    echo Warning!!!   TAP device: $TAP_IF is not exist, abort $0 !!!
+    echo 'please use "mktap.sh create [1]" command to create $TAP_IF device.'
+    echo 'Do you want to create TAP01 device using mktap.sh ? ..please reading $0 source code'
+    # mktap.sh create TAP01 
+    exit 1
+fi
 
 IS_BUSY_TAP=`echo $IPV4_IFS| tr ';' '\n'  | \
     grep -v disconnect  | grep -i connect.*$TAP_IF | \
@@ -28,6 +38,8 @@ IS_BUSY_TAP=`echo $IPV4_IFS| tr ';' '\n'  | \
 if [ $TAP_IF. == $IS_BUSY_TAP. ]; then
     echo Device busy: $TAP_IF is connected, can\'t setup $TAP_IF.
 else
+
+# if TAP_IF is not busy, setup ICS, and firewall under wins.
 
     CONNECTED_IFS=`echo $IPV4_IFS | tr ';' '\n' | \
 	egrep -iv '(disconnected|loopback|------|idx|^$)' | \
@@ -46,6 +58,7 @@ else
 #   netsh interface ipv4 set address $TAP_IF static 192.168.100.10 255.255.255.0 10.7.2.34
 #   netsh interface ipv4 set address $TAP_IF static $TAP_ADDR $TAP_MASK $TAP_GATWAY
 
+    #setup $TAP_IF to $TAP_ADDR, $TAP_MASK, GW: $TAP_GATWAY
     netsh interface ipv4 \
         set address name=$TAP_IF source=static \
         addr=$TAP_ADDR mask=$TAP_MASK \
@@ -58,8 +71,11 @@ else
     qemu -m $MEMORY \
         -net nic,vlan=1,macaddr=$MAC1 \
 		-net socket,vlan=1,listen=localhost:1234 \
+		-net socket,vlan=1,mcast=230.0.0.1:1234 \
         -net nic,macaddr=$MAC0 -net tap,ifname=$TAP_IF \
         -hda "$Q_IMAGE"
 
+        #-net nic,vlan=1,macaddr=$MAC1 \
+		#-net socket,vlan=1,mcast=230.0.0.1:1234 \
 fi
 

@@ -1,0 +1,6 @@
+LINKS_FILES=`find ./ -type l | grep -v '.svn/' | wc -l`
+NORMAL_FILES=`find ./ -type f | grep -v '.svn/' | wc -l`
+
+wc -l `find ./ -type f | grep -v '.svn/'` | sort
+echo LINKS_FILES: $LINKS_FILES
+echo NORMAL_FILES: $NORMAL_FILES

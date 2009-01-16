@@ -5,11 +5,11 @@
 source $DATA_ENV_D/wl-query.conf
 
 WLPLE_POST=$WL_URL'/intranet/index.php?link=6&page=2'
-
+WLPLE_POST_RESULT=`mktemp`
 COOKIE=cookie.jar
 DATA_POST=data.post
 HEADER=header.txt
-QUERY_RESULT=result.html
+QUERY_RESULT=`mktemp`
 
 DUMPER="w3m -T text/html -dump"
 eg_s1='(員工編號|英文姓名|連絡電話|座位分機|部　　門)' 
@@ -42,13 +42,43 @@ curl $VERBOSE -s -c $COOKIE  -X POST --data-binary "`
 
 	select_company=&xx=&select_unit=&search_name=$NAME_ESCAPE&Image4411.x=0&Image4411.y=0
 	EOF 
-	`"	$WLPLE_POST  | \
+	`"	$WLPLE_POST > $WLPLE_POST_RESULT
+  
+cat $WLPLE_POST_RESULT | \
 		$DUMPER	    | \
 		$FILTER1 | \
 		$FILTER2 | \
 		sed -e 's/\[.*\]//g' -e 's/︰//g' -e 's/       //g' | \
-		gawk '{print $1,$2; print $3,$4; }'
+		gawk '{print $1,$2; print $3,$4; }' \
+    > $QUERY_RESULT
 
+#echo $QUERY_RESULT
+
+PRGNAME=`basename $0`
+case $PRGNAME in
+wltel)
+    cat $QUERY_RESULT | egrep '(姓|分)'
+    ;;
+wlhelp)
+    cat <<-EOF
+	wlple, wltel,...
+	$0 [ name | eng_name | ...]
+EOF
+    ;;
+*)
+    cat $QUERY_RESULT
+    ;;
+esac
+case $2 in
+debug)
+    echo DEBUG RAW RESULT IS:  $WLPLE_POST_RESULT
+    echo $WLPLE_POST_RESULT > wlple.debug.info
+    ;;
+*)
+    rm -f $WLPLE_POST_RESULT
+;;
+esac
+rm -f $QUERY_RESULT
 #FILTER1	#egrep   '(員工編號|英文姓名|連絡電話|座位分機|部　　門)' 
 #FILTER2	#\| grep -v '中/英姓名' | \
 

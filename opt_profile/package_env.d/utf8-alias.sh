@@ -16,7 +16,7 @@ if [ $OSTYPE. == cygwin. ] ; then
 
     if  [ $ret_value -eq 0 ] ; then
 	#echo LANG is $LANG
-	for cmd in ipconfig ping netstat net nslookup route netsh tracert; do
+	for cmd in ipconfig ping netstat net nslookup route netsh tracert arp; do
 	    #echo $cmd
 	    alias $cmd="u8 $cmd"
 	done
