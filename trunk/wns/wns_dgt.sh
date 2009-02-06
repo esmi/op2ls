@@ -232,20 +232,6 @@ function transfer_ht2txt() {
 	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
     fi
 }
-#function transfer_ht2txt() {
-#
-#    if [ -d $DGT_LOCATION ]; then
-#        rm -f $DGT_LOCATION/*.txt 
-#
-#	for i in $(find $DGT_LOCATION -type f) ; do
-#	    ./dgt_ht2txt.pl  $i  2> /dev/nul | piconv -f big5 -t utf-8 > $i.txt
-#            echo -n '.'
-#	done
-#    else
-#	echo -e "\tDirectory: $DGT_LOCATION, is not exist."
-#	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
-#    fi
-#}
 
 #  END OF FUNCTIONs..............................................................................
 
