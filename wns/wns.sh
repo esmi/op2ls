@@ -53,7 +53,7 @@ fetch_news_list_report() {
 # LOGIN / LOGOUT functions.
 function login_post_to_SITE() {
 
-    _logging "$FUNCNAME" "_LOGIN_POST_URL: $_LOGIN_POST_URL"
+    _logging "Function -> $FUNCNAME" "_LOGIN_POST_URL: $_LOGIN_POST_URL"
 
     curl $VERBOSE  -c $_COOKIE_JAR -D $_LOGIN_POST_HEADER\
 	    -X POST --data-ascii "`
@@ -69,7 +69,7 @@ function login_post_to_SITE() {
 
 function logout_from_SITE() {
 
-    _logging "$FUNCNAME"  "_LOGOUT_URL: $_LOGOUT_URL , _LOGOUT_RESULT: $_LOGOUT_RESULT"
+    _logging "Function -> $FUNCNAME"  "_LOGOUT_URL: $_LOGOUT_URL , _LOGOUT_RESULT: $_LOGOUT_RESULT"
     curl $VERBOSE -b $_COOKIE_JAR \
 	    -X GET $_LOGOUT_URL	--output $_LOGOUT_RESULT 
 }
@@ -84,14 +84,14 @@ function login_to_TPG() {
 
 function login_content_string_TPG() {
 
-    TPG_LOGIN_REFERER="$TPG_LOGIN_POST_URL"
+    local _LOGIN_REFERER="$TPG_LOGIN_POST_URL"
 
-    TPG_LOGIN_CTT_RFR=$(uri_escape $TPG_LOGIN_REFERER)
-    TPG_LOGIN_CTT_ACT="account=$(uri_escape $TPG_ACT)"
-    TPG_LOGIN_CTT_PW="pw=$(uri_escape $TPG_PWD)"
-    TPG_LOGIN_CTT_SGB="siginbtn=Login"
+    local _LOGIN_RFR=$(uri_escape $_LOGIN_REFERER)
+    local _LOGIN_ACT="account=$(uri_escape $TPG_ACT)"
+    local _LOGIN_PW="pw=$(uri_escape $TPG_PWD)"
+    local _LOGIN_SGB="siginbtn=Login"
 
-    _LOGIN_CONTENT="refLink="$TPG_LOGIN_CTT_RFR'&'$TPG_LOGIN_CTT_ACT'&'$TPG_LOGIN_CTT_PW'&'$TPG_LOGIN_CTT_SGB
+    _LOGIN_CONTENT="refLink="$_LOGIN_RFR'&'$_LOGIN_ACT'&'$_LOGIN_PW'&'$_LOGIN_SGB
 }
 function fetch_news_list_TPG() {
 
@@ -145,7 +145,7 @@ function setting_TPG() {
     TPG_URL=http://$TPG_SITE
 
     TPG_LOCAL_SIGN_URL=tri/sign.asp
-    TPG_LOGIN_POST_URL=$TPG_URL/$TPG_LOCL_SIGN_URL
+    TPG_LOGIN_POST_URL=$TPG_URL/$TPG_LOCAL_SIGN_URL
 
     TPG_LOGIN_POST_HEADER=$WNS_LOG/TPG_LOGIN_POST.header
     TPG_LOGIN_POST_RESULT=$WNS_LOG/TPG_LOGIN_POST.result
@@ -176,6 +176,9 @@ function setting_TPG() {
 }
 
 function TPG() {
+	
+    setting_TPG
+
     inform 'PHASE I: LOGIN'
     login_content_string_TPG
     login_post_to_SITE 
@@ -201,11 +204,11 @@ function fetch_news_list_DGT() {
     ORIG_FILE=$DGT_NEWS_LIST_RESULT
     WORK_FILE=`mktemp`
     TEMP_FILE=`mktemp`
-
+   
     #DGT_LOCATION="./$DGT_NEWS_LOC/`date +%Y%m%d`"
     LIST_FILE="./$DGT_NEWS_LOC/`date +%Y%m%d`".listing
     mkdir -p $DGT_LOCATION
-    _logging "$FUNCNAME" "DGT_SHOWNEWS_URL: $DGT_SHOWNEWS_URL, DGT_LOCATION: $DGT_LOCATION"
+    _logging "Function -> $FUNCNAME" "DGT_SHOWNEWS_URL: $DGT_SHOWNEWS_URL, DGT_LOCATION: $DGT_LOCATION"
 
     cat $ORIG_FILE | \
 	sed  -e 's|<img src.*><td|<td|g' | \
@@ -252,7 +255,7 @@ function fetch_news_list_DGT() {
 
 	#echo $this_line >> $DGT_LOCATION/$LIST_FILE
         echo $(expr substr `expr 1000 + $LCNT` 2 3 ), $this_line | \
-	    gawk -F ',' '{print $1". " $4}' | sed 's/<td>//g' >> $LIST_FILE
+	    gawk -F ',' '{print $1". " $4}' | sed 's/<td>//g' | sed 's/<.*>//g' >> $LIST_FILE
 
 	tailer='f=A&PgSize=5&yS=31&yAddMulitColsFrom=news'
         jumpout_made="JumpOut="$header'&'$from'&'$to'&'$p'&'$date_publish'&'$pages'&'$all_seq'&'$tailer
@@ -304,15 +307,21 @@ function login_to_DGT() {
     RET_CODE=$?
     RETURN_OK=`cat $DGT_LOGIN_HEADER | grep -i ^HTTP.*200`
 
+    #echo RETURN_OK: $RETURN_OK
+    #echo -------------------------------------------
     if [ "$RETURN_OK". == "". ] ; then
-	_logging "$FUNCNAME: CHECK SITE response code." \
-		 "\t\tlogin return code: $RET_CODE, \t\tLOGIN RETURN CODE: $RETURN_OK"
-	logout_from_SITE
+	RETURN_OK=`cat $DGT_LOGIN_HEADER | grep -i ^HTTP | tail -n 1`
+
+	_logging "function-> $FUNCNAME, DGT LOGIN CHECK SITE response:" \
+		 "\tCURL return code: $RET_CODE, \tHTTP return code: $RETURN_OK"
 	
-	_logging "\t\tError Message: `grep -i location $DGT_LOGIN_HEADER | piconv -f big5 -t utf-8`" \
-		 "\t\tTry re-logout from $DGT_LOGOUT_URL, $DGT_LOGOUT_OK_URL." 
+	_logging "\tMessage: `grep -i location $DGT_LOGIN_HEADER | piconv -f big5 -t utf-8`" \
+		 "\tTry re-logout from $DGT_LOGOUT_URL, $DGT_LOGOUT_OK_URL."
+	logout_from_SITE
+	echo "" 
 	abort "Please try again......" 
     fi
+    _logging "$FUNCNAME: leave LOGIN TO CHECK SITE."  "..."
 }
 
 login_content_string_DGT() {
@@ -365,6 +374,8 @@ function setting_DGT() {
 
 function DGT() {
 
+    #setting_DGT
+
     _logging 'PHASE I: LOGIN'
     login_to_DGT
     login_content_string_DGT
@@ -383,17 +394,179 @@ function DGT() {
     transfer_ht2txt
 }
 
+function tag_parsing_bydate() {
+    #echo $1 $2 $3
+    local SITE_NAME=$1
+    local start_d=$2
+    local days=$3
+    local i=0
+
+    local PARSE_SEQ_F=`mktemp`
+    cat <&0 > $PARSE_SEQ_F
+
+    # disable errexit shelloption $ set +e
+    set +e
+    #echo SHELLOPTS: $SHELLOPTS
+
+    while true ; do
+
+	local date_str=$start_d" "$i" day"
+	local PARSE_DATE=`date  --date="$date_str" +%Y%m%d`
+	#echo $PARSE_DATE, $date_str, $i
+
+	case "$SITE_NAME" in 
+	    DGT) local PARSED_F=$DGT_NEWS_LOC/$PARSE_DATE.listing ;;
+	    TPG) local PARSED_F=$TPG_NEWS_LOC/$PARSE_DATE.listing ;;
+	    *) echo Error pasing type: $1. ; return 1 ;
+	esac 
+
+	tag_parsing_file $PARSE_SEQ_F $PARSED_F $PARSE_DATE $SITE_NAME
+
+	i=`expr $i + 1 `
+	if [ $i == $days ] ; then break ; fi
+    done
+    
+    rm -f $PARSE_SEQ_F
+    set -e
+}
+
+function tag_parsing() {
+#prototype tag_parsing <DGT|TPG> yyyymmdd
+    local PARSE_SEQ_F=`mktemp`
+    local PARSE_DATE=$2
+    local SITE_NAME=$1
+    
+    case "$1" in 
+	DGT) local PARSED_F=$DGT_NEWS_LOC/$PARSE_DATE.listing ;;
+	TPG) local PARSED_F=$TPG_NEWS_LOC/$PARSE_DATE.listing ;;
+	*) echo Error pasing type: $1. ; return 1 ;
+    esac 
+    
+    cat <&0 > $PARSE_SEQ_F
+
+    tag_parsing_file $PARSE_SEQ_F $PARSED_F $PARSE_DATE $SITE_NAME
+
+    rm -f $PARSE_SEQ_F
+}
+
+function tag_parsing_file() {
+#prototype:    tag_parsing_file $input_SEQ_F $PARSED_FILE $PARSE_DATE $SITE_NAME
+    local PARSE_SEQ_F=$1
+    local PARSED_F=$2
+    local PARSE_DATE=$3
+    local SITE_NAME=$4
+
+    exec 3<>$PARSE_SEQ_F
+
+    while true ; do
+	read THIS_L <&3
+        EOF=$?
+
+	if [ $EOF == 1 ] ; then break ; fi
+
+        SEQ=`echo $THIS_L | gawk -F '|' '{print $1}'`
+	KEY=`echo $THIS_L | gawk -F '|' '{print $2}'`
+        NOT=`echo $THIS_L | gawk -F '|' '{print $3}'`
+	CONTENT=`echo $THIS_L | gawk -F '|' '{print $4}'`
+        TAG=`echo $THIS_L | gawk -F '|' '{print $5}' |  sed -e 's/, /,/g' -e 's/, /,/g' -e 's/^ //g'`
+	KEY=`echo $KEY | sed -e 's/, /,/g' -e 's/, /,/g'`
+        S_KEY='('`echo $KEY | sed 's/,/|/g'`')'
+	NOT=`echo $NOT | sed -e 's/, /,/g' -e 's/, /,/g'`
+        S_NOT='('`echo $NOT | sed 's/,/|/g'`')'
+
+	if [ "$S_NOT". == '()'. ] ; then S_NOT='(@@%%&&%%@@$$$$)' ; fi
+
+        #echo SEQ: $SEQ, TAG: $TAG, S_KEY: $S_KEY, S_NOT: \"$S_NOT\"
+
+        egrep -i "$S_KEY" "$PARSED_F" | \
+	   egrep -v "$S_NOT" | sed -e "s/$/|$TAG|$KEYS|$SEQ|$PARSE_DATE/g" -e "s/^/$SITE_NAME|$PARSE_DATE|/g"
+    done
+
+    #shopt -s execfail
+    #exec 3>&-
+    exec 3<&- 
+}
+
+function tag_one_line() {
+
+    SORT_F=`mktemp`
+    SEQ_F=`mktemp`
+
+    set +e
+
+    cat <&0 > $SORT_F
+    cat $SORT_F | gawk -F '|' '{print $1"|"$2"|"$3}' | gawk -F '[.,]' '{print $1}' | sort |uniq > $SEQ_F
+    exec 3<>$SEQ_F
+
+    L_NUM=`cat $SORT_F | tail -n 1 | gawk -F '|' '{print $2}' | gawk -F '.' '{print $1}'`
+    while true ; do
+	#echo -n '.' >&2
+	read L_CNT <&3
+	EOF=$?
+	if [ $EOF == 1 ] ; then break ; fi
+
+	#grep -i '|'$L_CNT'[.|,]' $SORT_F 
+	TITLE=`grep -i $L_CNT $SORT_F | gawk -F '|' '{print $3}' | gawk -F '[.,]' '{print $2}' | head -n 1`
+	#echo $TITLE
+	TAGS=`grep -i $L_CNT $SORT_F | \
+		gawk -F '|' '{print $4}' | tr ',' '\n' | \
+		sort |uniq | tr '\n' ',' | sed 's/,$//g'`
+	echo  $L_CNT'|'$TITLE'|'$TAGS
+    done
+    echo "" >&2
+    exec 3>&-
+    rm -f $SORT_F $SEQ_F
+    set -e
+}
+
+__show_help() {
+	cat <<-_EOF
+		${_name} is a fetch news program.
+
+		Usage: ${_name} [ [ -d <value> | --debug <value> ] [ --DGT | --TPG ] | [ --help | --version ]
+		Tags usage; ${_name}  --create-tag-tab | --tag-seq [seq] | [parsing-parametrs] 
+		             [ --tag-parsing < SITE > | --tag-parsing-bydate < SITE > <date> <datenum> ] |
+		               --tag-one-line
+
+		    -d, --debug <value> : setup debug value
+		    --DGT: news site DGT;  --TPG: news site TPG.
+
+		    --create-tag-tab: create tags table from clipboard.
+		    --tag-seq [seq]: parse specific seq no from tags table. seq(ref)
+		    --tag-parsing:
+		    --tag-parsing-bydate: 
+		    --tag-one-line: after --tag-paring* you can format duplicated title to one line.
+
+		    --help: show this message.;	    --version: show version.
+		    parsing-parameters:
+
+		    REF:
+		    seq exampe: 134, 1-5, 12345, 1-9, 0-9
+		    Tags example:
+		        ${_name} --tag-seq 1-3 | ${_name} --tag-parsing < DGT | TPG >
+		        ${_name} --tag-seq 135 | ${_name} --tag-parsing < DGT | TPG >
+		    Tags parsing:
+		            parsing DGT from 20090204, parse 2 days (20090204, 20090205)
+		            ${_name} --tag-parsing-bydate "DGT 20090204 2"
+		    STEP:
+		        ${_name} --debug 300 DGT ; ${_name} --debug 300 TPG
+		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "DGT 20090206 1" > result.1
+		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "TPG 20090206 1" > result.2
+		        cat result.1 result.2 | ${_name} --tag-one-line > 20090206.tag-report
+		_EOF
+}
+
+readonly -f __show_help 
+#__show_version error warning inform verbose __stage __step
 #  END OF FUNCTIONs..............................................................................
 
 # MAIN()
-# DEBUG CONFIGURATION............................................................................
-DEBUG=200
 DEBUG=0
-DEBUG=300
-
-# BEGIN OF DATA CONFIGURATION...................................................................
-#   Private data locate in "WNS.CFG", it contain :
-#   $TPG_ACT, $TPG_PWD, $TPG_SITE, $TPG_NEWS_LOC
+# DATA CONFIGURATION.
+#   Private data locate in "wns.cfg":
+#   1. DGT: $DGT_USR_ID, $DGT_USR_PWD, 
+#	    $DGT_ACT, $DGT_PWD, $DGT_SITE, $DGT_NEWS_LOC
+#   2. TPG: $TPG_ACT, $TPG_PWD, $TPG_SITE, $TPG_NEWS_LOC
 DATA_PATH=./wns_cfg
 WNS_CONFIG="$DATA_PATH/wns.cfg"
 WNS_LOG=./wns_log
@@ -405,27 +578,63 @@ if ! [  -a $WNS_CONFIG ] ; then
 fi
 
 source $WNS_CONFIG
-# Setting debug..................................................................................
-if [ $DEBUG -eq 0 ] ; then
-    VERBOSE="--silent --show-error"
-fi
-if [ "$DEBUG" -ge 200 ] ; then
-    VERBOSE="--silent --show-error"
-fi
 
-# Begin MAIN Procedure...........................................................................
-case $1 in
-    TPG)
-	setting_TPG
-	TPG
-	;;
-    DGT)
-	setting_DGT
-	DGT
-	;;
-    *)
-	__show_help
-	;;
-esac
-# End of MAIN()..................................................................................
+# check options...
+
+L_OP="create-tag-tab,tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,DGT,dgt,TPG,tpg,help,version,debug:"
+OPT=`getopt -o Dd:,hHvV --long $L_OP -- "$@"`
+#OPT=`getopt -o Dd:,hHvV \
+#	--long create-tag-tab,tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,DGT,dgt,TPG,tpg,help,version,debug: -- "$@"`
+
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+
+#echo OPT: $OPT
+eval set -- "$OPT"
+if [  $# -eq 1 ] ; then __show_help; fi
+#echo $#, $1, $2, $3, $4
+while true ; do
+    case "$1" in
+        --DGT|--dgt)	setting_DGT;    DGT ;    shift 	;    ;;
+        --TPG|--tpg)    setting_TPG;    TPG ;    shift 	;    ;;
+	--create-tag-tab) 
+	    getclip | b5utf8 | d2u |egrep -v '(^seq|^\(0|^\"seq|title全為英文|^.*OR.*NOT)'; shift ;;
+	--tag-seq)
+	    case "$2" in
+		'[:blank:]'*) cat types.tab2 | grep ^[$2]; shift 2;;
+		[0-9]*)	    cat types.tab2 | grep ^[$2] ; shift 2 ;;
+		""|[a-z]*|--*) shift ; cat types.tab2 | grep -v ^0 ;  ;;
+	    esac 
+	    #echo $1 $2
+	    ;;
+	--tag-one-line)	    tag_one_line ;    shift ;;
+	--tag-parsing-bydate) tag_parsing_bydate $2 $3 $4; shift 3 ;;
+
+	--tag-parsing)
+		PARSE_D="`date  +%Y%m%d`"
+
+		case "$2" in
+		DGT)   tag_parsing "DGT" $PARSE_D ; shift 2 ;;
+		TPG)   tag_parsing "TPG" $PARSE_D ; shift 2 ;;
+		*) echo "error tag-parsing site ";  exit 1  ;;
+		esac
+		;;
+        -d|--debug)
+	    case "$2" in
+		""|[a-z]*) 
+		    #echo "Option debug, no argument"; 
+		    DEBUG=0 ;	shift  ;;
+                *)
+		    #echo debug number: $DEBUG
+		    DEBUG=$2 ;	shift 2    ;;
+            esac 
+	    if [ $DEBUG -eq 0 ] ; then      VERBOSE="--silent --show-error" ;	    fi
+	    if [ "$DEBUG" -ge 200 ] ; then  VERBOSE="--silent --show-error" ; 	    fi
+	    echo DEBUG: $DEBUG, VERBOSE: $VERBOSE
+	    ;;
+	--version|-v)	__show_version; shift	    ;;
+	-h|--help) 	__show_help;    shift 	    ;;
+        --)		shift   ;	break 	    ;;
+	*)		shift 	;;
+    esac
+done
 
