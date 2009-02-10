@@ -2,13 +2,25 @@
 source wns_include.sh
 
 # COMMON Functions.
+function site_root_path() {
+
+    case "$1" in
+    DGT)
+        ret=$DGT_NEWS_LOC ;;
+    TPG)
+	ret=$TPG_NEWS_LOC ;;
+    *)
+	ret="" ;;
+    esac
+    echo $ret
+}
 
 function transfer_ht2txt() {
 
     if [ -d $_LOCATION ]; then
         rm -f $_LOCATION/*.txt 
 
-	for i in `find $_LOCATION -type f` ; do
+	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$)'` ; do
 	    ./ht2txt.pl  $i  2> /dev/nul | piconv -f big5 -t utf-8 > $i.txt
             echo -n '.'
 	done
@@ -16,6 +28,42 @@ function transfer_ht2txt() {
 	echo -e "\tDirectory: $_LOCATION, is not exist."
 	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
     fi
+    echo ""
+}
+
+function transfer_txt2rtf() {
+
+    if [ -d $_LOCATION ]; then
+        rm -f $_LOCATION/*.rtf 
+
+	for i in `find $_LOCATION/*.txt -type f` ; do
+	ln=`echo $i | sed -e 's/^.*\///g' -e 's/.txt//g'`
+	TITLE=`head -n $ln $_NEWS_REPORT | tail -n 1 | gawk -F '[.|,]' '{print $2}'`
+	    #echo $i, $ln, $TITLE, $_NEWS_REPORT
+	    (echo '<H1>'$TITLE'</H1>'; cat $i) | sed 's/。$/。<BR><BR>/g' | sed 's/; /<BR><BR>/g'  | \
+		 ./ht2rtf.pl  2> /dev/nul > `echo $i|sed 's/.txt//g'`.rtf
+            echo -n '.'
+	done
+    else
+	echo -e "\tDirectory: $_LOCATION, is not exist."
+	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
+    fi
+    echo ""
+}
+function transfer_ht2rtf() {
+
+    if [ -d $_LOCATION ]; then
+        rm -f $_LOCATION/*.rtf 
+
+	for i in `find $_LOCATION -type f | egrep -v '(txt$|rtf$)'` ; do
+	    cat $i | piconv -f big5 -t utf-8 | ./ht2rtf.pl  2> /dev/nul > $i.rtf
+            echo -n '.'
+	done
+    else
+	echo -e "\tDirectory: $_LOCATION, is not exist."
+	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
+    fi
+    echo ""
 }
 
 function uri_escape() {
@@ -173,6 +221,7 @@ function setting_TPG() {
 
     _COOKIE_JAR=$TPG_COOKIE_JAR
 
+    _NEWS_REPORT=$TPG_LOCATION.listing
 }
 
 function TPG() {
@@ -194,6 +243,8 @@ function TPG() {
 
     inform 'PHASE V: Transfer HTML to TEXT'
     transfer_ht2txt
+    _logging 'PHASE V: Transfer HTML to RTF'
+    transfer_txt2rtf
 }
 
 # D G T 
@@ -370,6 +421,8 @@ function setting_DGT() {
     _NEWS_LIST_RESULT=$DGT_NEWS_LIST_RESULT
 
     _COOKIE_JAR=$DGT_COOKIE_JAR
+
+    _NEWS_REPORT=$DGT_LOCATION.listing
 }
 
 function DGT() {
@@ -390,8 +443,10 @@ function DGT() {
     _logging 'PHASE IV: LOGOUT'
     logout_from_SITE
 
-    #_logging 'PHASE V: Transfer HTML to TEXT'
+    _logging 'PHASE V: Transfer HTML to TEXT'
     transfer_ht2txt
+    _logging 'PHASE V: Transfer HTML to RTF'
+    transfer_txt2rtf
 }
 
 function tag_parsing_bydate() {
@@ -519,46 +574,160 @@ function tag_one_line() {
     set -e
 }
 
+function add_folder_tag () {
+
+FOLDER_TAG_TABLE=folder.tab
+
+set +e
+if [ $1. == "". ] ; then
+    ARTICLE_TAG_REPORT=`mktemp`
+    cat <&0 > $ARTICLE_TAG_REPORT
+else
+    ARTICLE_TAG_REPORT=$1
+fi
+
+FOLDER_TAG=`mktemp`
+
+cat $FOLDER_TAG_TABLE | egrep -v ^0 |  sort > $FOLDER_TAG
+#cat folder.tab | egrep  ^7 |  sort > $FOLDER_TAG
+
+exec 4<>$ARTICLE_TAG_REPORT
+while true; do
+
+    read article <&4
+    ART_EOF=$?
+    if [ $ART_EOF == 1 ] ; then break ; fi
+    
+    SITE=`echo $article | gawk -F '|' '{print $1}'`
+    DATE=`echo $article | gawk -F '|' '{print $2}'`
+    SEQ=`echo $article | gawk -F '|' '{print $3}'`
+    TITLE=`echo $article | gawk -F '|' '{print $4}'`
+    TAGS=`echo $article | gawk -F '|' '{print $5}'`
+
+    #echo SITE: $SITE, TAGS: $TAGS 
+    exec 3<>$FOLDER_TAG
+    while true; do
+	read line <&3
+	EOF=$?
+
+	if [ $EOF == 1 ] ; then break ; fi
+
+	TAR_SEQ=`echo $line | gawk -F '|' '{print $1}'`
+        TAR_TAG=`echo $line | gawk -F '|' '{print $7}'| sed -e 's/ or /|/g' -e 's/"//g' | sed 's/^ //g'`
+	#echo $TAGS | grep "$TAR_TAG"
+	STR="`echo $TAGS | egrep "$TAR_TAG"`"
+	#echo line: $line
+
+	#echo TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
+
+	if [ "$STR". != "". ] ; then
+	    dir_1=`echo $line | gawk -F '|' '{print $2}'| sed -e 's/ //g'`
+	    dir_2=`expr substr $DATE 1 4``echo $line | gawk -F '|' '{print $3}'| \
+		     sed -e 's/ //g' -e 's/[0-9]//g'`
+	    dir_3="$(expr substr $DATE 1 4)"年"$(expr `expr substr $DATE 5 2` + 0)"月
+
+	    #dir_3=`echo $line | gawk -F '|' '{print $4}'`
+	    #idir_4=`echo $line | gawk -F '|' '{print $5}'`
+
+	    dir_4="$(expr `expr substr $DATE 5 2` + 0)"月"$(expr `expr substr $DATE 7 8` + 0 )"日
+	    dir_5=`echo $line | gawk -F '|' '{print $6}' | sed -e 's/ //g'`
+	    location="$dir_1/$dir_2/$dir_3/$dir_4/$dir_5"
+
+	    #echo ---- TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
+	    #echo artical title: $TITLE
+	    #echo artical tags: $TAGS
+	    #echo location tag: \"$TAR_TAG\"
+	    #echo directory: $dir_1/$dir_2/$dir_3/$dir_4/$dir_5
+	    echo $article'|'`echo $TAR_TAG|sed 's/|/,/g'`'|'$location
+	    break
+	fi
+	#echo "STR: " $STR
+	#echo TAR_SEQ: $TAR_SEQ, TAR_TAG: $TAR_TAG, line: $line
+    done
+    exec 3>&-
+
+done
+
+exec 4>&-
+
+rm -f $FOLDER_TAG
+if [ $1. == "". ] ; then
+    rm -f $ARTICLE_TAG_REPORT
+fi
+set -e
+}
+
+function move_folder() {
+
+    #NEWS_ROOT_PATH=./WNS_RTF # define in wns.cfg.
+    NEWS_EXTEN=".rtf"
+    while true ; do
+
+	read FLR <&0
+        EOF_FLR=$?
+	if [ $EOF_FLR == 1 ] ; then break; fi
+	SITE=$(site_root_path "`echo $FLR | gawk -F "|" '{print $1}'`")
+	DATE=`echo $FLR | gawk -F "|" '{print $2}'`
+        SEQ="$(expr $(echo $FLR | gawk -F "|" '{print $3}') + 0 )""$NEWS_EXTEN"
+	TARGET="`echo $FLR | gawk -F "|" '{print $4}' | sed -e 's/^ //g' -e 's/ $//g'`$NEWS_EXTEN"
+        LOCATION="$NEWS_ROOT_PATH/`echo $FLR | gawk -F "|" '{print $7}'`"
+	
+        SRC="$SITE/$DATE/$SEQ"
+	DEST="$LOCATION/$TARGET"
+
+        echo move $SRC to $DEST
+	mkdir -p "$LOCATION"
+        cp "$SRC" "$DEST"
+
+        #echo move $SITE/$DATE/$SEQ to $LOCATION/$TARGET
+	#mkdir -p "$LOCATION"
+        #cp "$SRC" "$DEST"
+    done
+
+}
+
+
+
 __show_help() {
 	cat <<-_EOF
-		${_name} is a fetch news program.
+		${_name} is a fetch web news program.
 
 		Usage: ${_name} [ [ -d <value> | --debug <value> ] [ --DGT | --TPG ] | [ --help | --version ]
-		Tags usage; ${_name}  --create-tag-tab | --tag-seq [seq] | [parsing-parametrs] 
-		             [ --tag-parsing < SITE > | --tag-parsing-bydate < SITE > <date> <datenum> ] |
-		               --tag-one-line
+		Tags usage: ${_name} --tag-seq [seq] | --tag-parsing-bydate < SITE > <date> <daynum> ] |
+		             [ [...parsing-parametrs] --tag-parsing < SITE >] | --tag-one-line
+		Tab usage: ${_name}  --create-tag-tab | --create-folder-tab
+		folder tag: ${_name} --add-folder-tag | --move-folder [ fldr-tag-report ]
 
-		    -d, --debug <value> : setup debug value
-		    --DGT: news site DGT;  --TPG: news site TPG.
+		    -d, --debug <value> : setup debug value;   --DGT: news site DGT;  --TPG: news site TPG.
 
-		    --create-tag-tab: create tags table from clipboard.
-		    --tag-seq [seq]: parse specific seq no from tags table. seq(ref)
-		    --tag-parsing:
-		    --tag-parsing-bydate: 
+		    --tag-seq [seq]: parse specific seq no from tags table(types.tab). seq(ref)
+		    --tag-parsing:	    ;	--tag-parsing-bydate: 
 		    --tag-one-line: after --tag-paring* you can format duplicated title to one line.
+		    ...parsing-parameters: no implement.
+		    --add-folder-tag: read from "tag-report" and add "folder tag and location| fldr tag report"
+		    --move-folder: according fldr-report move article to tag folder.
+
+		    --create-tag-tab: output tags table to STDOUT from clipboard.
+		    --create-folder-tab: output folder table to STDOUT from clipboard.
 
 		    --help: show this message.;	    --version: show version.
-		    parsing-parameters:
 
-		    REF:
-		    seq exampe: 134, 1-5, 12345, 1-9, 0-9
-		    Tags example:
-		        ${_name} --tag-seq 1-3 | ${_name} --tag-parsing < DGT | TPG >
-		        ${_name} --tag-seq 135 | ${_name} --tag-parsing < DGT | TPG >
-		    Tags parsing:
-		            parsing DGT from 20090204, parse 2 days (20090204, 20090205)
-		            ${_name} --tag-parsing-bydate "DGT 20090204 2"
+		    REF:    seq exampe: 135, 1-5, 12345, 1-9, 0-9, -- ; '--' is all seq.
+		            Tags example: ${_name} --tag-seq 1-3 | ${_name} --tag-parsing < DGT | TPG >
+		                          ${_name} --tag-seq 135 | ${_name} --tag-parsing < DGT | TPG >
+		            Tags parsing: parsing DGT from 20090204, parse 2 days (20090204, 20090205)
+		                          ${_name} --tag-parsing-bydate "DGT 20090204 2"
 		    STEP:
-		        ${_name} --debug 300 DGT ; ${_name} --debug 300 TPG
-		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "DGT 20090206 1" > result.1
-		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "TPG 20090206 1" > result.2
-		        cat result.1 result.2 | ${_name} --tag-one-line > 20090206.tag-report
+		        ${_name} --debug 300 DGT ; ${_name} --debug 300 TPG	# fetch article
+		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "DGT 20090206 1" > res.1 #parse-res
+		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "TPG 20090206 1" > res.2
+		        cat res.1 res.2 | ${_name} --tag-one-line > 20090206.tag-report ;# tag-report
+		        cat 20090206.tag-report | ${_name} --add-folder-tag > 20090206.fldr-report #fldr-report
+		        cat 20090206.fldr-report | ${_name} --move-folder 
 		_EOF
 }
 
 readonly -f __show_help 
-#__show_version error warning inform verbose __stage __step
-#  END OF FUNCTIONs..............................................................................
 
 # MAIN()
 DEBUG=0
@@ -580,9 +749,13 @@ fi
 source $WNS_CONFIG
 
 # check options...
-
-L_OP="create-tag-tab,tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,DGT,dgt,TPG,tpg,help,version,debug:"
-OPT=`getopt -o Dd:,hHvV --long $L_OP -- "$@"`
+COMMON_OP="help,version,debug:"
+FETCH_OP="DGT,dgt,TPG,tpg"
+TAG_OP="tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line"
+FLDR_OP="add-folder-tag,move-folder"
+TAB_OP="create-tag-tab,create-folder-tab"
+ALL_OP="$TAB_OP,$TAG_OP,$FETCH_OP,$COMMON_OP,$FLDR_OP"
+OPT=`getopt -o Dd:,hHvV --long $ALL_OP -- "$@"`
 #OPT=`getopt -o Dd:,hHvV \
 #	--long create-tag-tab,tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,DGT,dgt,TPG,tpg,help,version,debug: -- "$@"`
 
@@ -598,6 +771,9 @@ while true ; do
         --TPG|--tpg)    setting_TPG;    TPG ;    shift 	;    ;;
 	--create-tag-tab) 
 	    getclip | b5utf8 | d2u |egrep -v '(^seq|^\(0|^\"seq|title全為英文|^.*OR.*NOT)'; shift ;;
+	--create-folder-tab) 
+	    getclip | tail -n `expr $(getclip | wc -l) - 3`| \
+		 b5utf8 | d2u |egrep -v '(^seq|^\(0|^\"seq|\|$)' ; shift ;;
 	--tag-seq)
 	    case "$2" in
 		'[:blank:]'*) cat types.tab2 | grep ^[$2]; shift 2;;
@@ -618,6 +794,8 @@ while true ; do
 		*) echo "error tag-parsing site ";  exit 1  ;;
 		esac
 		;;
+	--add-folder-tag) add_folder_tag ; shift ;;
+	--move-folder) move_folder; shift ;;
         -d|--debug)
 	    case "$2" in
 		""|[a-z]*) 
