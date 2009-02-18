@@ -9,10 +9,27 @@ function site_root_path() {
         ret=$DGT_NEWS_LOC ;;
     TPG)
 	ret=$TPG_NEWS_LOC ;;
+    TCT)
+	ret=$TCT_NEWS_LOC ;;
     *)
 	ret="" ;;
     esac
     echo $ret
+}
+
+function site_rtf_header() {
+    case "$1" in
+    DGT)
+        ret=$DGT_NAME ;;
+    TPG)
+	ret=$TPG_NAME ;;
+    TCT)
+	ret=$TCT_NAME ;;
+    *)
+	ret="" ;;
+    esac
+    echo "Create date: `date +%Y/%m/%d-%r` $ret"
+
 }
 
 function transfer_ht2txt() {
@@ -21,7 +38,7 @@ function transfer_ht2txt() {
         rm -f $_LOCATION/*.txt 
 
 	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$)'` ; do
-	    ./ht2txt.pl  $i  2> /dev/nul | piconv -f big5 -t utf-8 > $i.txt
+	    ./ht2html.pl  $i  2> /dev/nul | piconv -f big5 -t utf-8 > $i.txt
             echo -n '.'
 	done
     else
@@ -37,8 +54,8 @@ function transfer_txt2rtf() {
         rm -f $_LOCATION/*.rtf 
 
 	for i in `find $_LOCATION/*.txt -type f` ; do
-	ln=`echo $i | sed -e 's/^.*\///g' -e 's/.txt//g'`
-	TITLE=`head -n $ln $_NEWS_REPORT | tail -n 1 | gawk -F '[.|,]' '{print $2}'`
+	    ln=`echo $i | sed -e 's/^.*\///g' -e 's/.txt//g'`
+	    TITLE=`head -n $ln $_NEWS_REPORT | tail -n 1 | gawk -F '[.|,]' '{print $2}'`
 	    #echo $i, $ln, $TITLE, $_NEWS_REPORT
 	    (echo '<H1>'$TITLE'</H1>'; cat $i) | sed 's/。$/。<BR><BR>/g' | sed 's/; /<BR><BR>/g'  | \
 		 ./ht2rtf.pl  2> /dev/nul > `echo $i|sed 's/.txt//g'`.rtf
@@ -50,6 +67,7 @@ function transfer_txt2rtf() {
     fi
     echo ""
 }
+
 function transfer_ht2rtf() {
 
     if [ -d $_LOCATION ]; then
@@ -90,18 +108,21 @@ _logging() {
 # NEWS functions.
 fetch_news_list_report() {
     
-    _logging "$FUNCNAME" \
+    _logging "$FUNCNAME()" \
 		"_NEWS_LIST_URL: $_NEWS_LIST_URL , _NEWS_LIST_RESULT: $_NEWS_LIST_RESULT"
-    
-    curl $VERBOSE -b $_COOKIE_JAR \
-	-X get $_NEWS_LIST_URL  --output  $_NEWS_LIST_RESULT
 
+    if [ "$_COOKIE_JAR". == "". ] ; then
+	curl $VERBOSE -X get $_NEWS_LIST_URL --output $_NEWS_LIST_RESULT
+    else    
+        curl $VERBOSE -b $_COOKIE_JAR \
+	   -X get $_NEWS_LIST_URL  --output  $_NEWS_LIST_RESULT
+    fi
 }
 
 # LOGIN / LOGOUT functions.
 function login_post_to_SITE() {
 
-    _logging "Function -> $FUNCNAME" "_LOGIN_POST_URL: $_LOGIN_POST_URL"
+    _logging "Function -> $FUNCNAME()" "_LOGIN_POST_URL: $_LOGIN_POST_URL"
 
     curl $VERBOSE  -c $_COOKIE_JAR -D $_LOGIN_POST_HEADER\
 	    -X POST --data-ascii "`
@@ -117,7 +138,7 @@ function login_post_to_SITE() {
 
 function logout_from_SITE() {
 
-    _logging "Function -> $FUNCNAME"  "_LOGOUT_URL: $_LOGOUT_URL , _LOGOUT_RESULT: $_LOGOUT_RESULT"
+    _logging "Function -> $FUNCNAME()"  "_LOGOUT_URL: $_LOGOUT_URL , _LOGOUT_RESULT: $_LOGOUT_RESULT"
     curl $VERBOSE -b $_COOKIE_JAR \
 	    -X GET $_LOGOUT_URL	--output $_LOGOUT_RESULT 
 }
@@ -259,7 +280,7 @@ function fetch_news_list_DGT() {
     #DGT_LOCATION="./$DGT_NEWS_LOC/`date +%Y%m%d`"
     LIST_FILE="./$DGT_NEWS_LOC/`date +%Y%m%d`".listing
     mkdir -p $DGT_LOCATION
-    _logging "Function -> $FUNCNAME" "DGT_SHOWNEWS_URL: $DGT_SHOWNEWS_URL, DGT_LOCATION: $DGT_LOCATION"
+    _logging "Function -> $FUNCNAME()" "DGT_SHOWNEWS_URL: $DGT_SHOWNEWS_URL, DGT_LOCATION: $DGT_LOCATION"
 
     cat $ORIG_FILE | \
 	sed  -e 's|<img src.*><td|<td|g' | \
@@ -341,7 +362,7 @@ function fetch_news_list_DGT() {
 }
 
 function login_to_DGT() {
-    
+#    set +e    
     DGT_MYID="`echo -n $DGT_ACT | perl -MURI::Escape -ne 'print uri_escape($_);'`"
     DGT_LOGIN_URL=$DGT_URL/$DGT_LOCAL_SIGN_URL
     DGT_LOGIN_HEADER=$WNS_LOG/DGT_LOGIN.header
@@ -349,7 +370,7 @@ function login_to_DGT() {
 
     LOGIN_STRING="ID=$DGT_USR_ID&Password=$DGT_USR_PWD&MyID=$DGT_MYID&MyPwd=$DGT_PWD"
 
-    _logging "$FUNCNAME: LOGIN TO CHECK SITE." \
+    _logging "$FUNCNAME(): LOGIN TO CHECK SITE." \
 	     "LOGIN_STRING: $LOGIN_STRING, DGT_LOGIN_URL: $DGT_LOGIN_URL"
 
     curl $VERBOSE -c $DGT_COOKIE_JAR -D $DGT_LOGIN_HEADER \
@@ -363,16 +384,19 @@ function login_to_DGT() {
     if [ "$RETURN_OK". == "". ] ; then
 	RETURN_OK=`cat $DGT_LOGIN_HEADER | grep -i ^HTTP | tail -n 1`
 
-	_logging "function-> $FUNCNAME, DGT LOGIN CHECK SITE response:" \
+	_logging "function-> $FUNCNAME(), DGT LOGIN CHECK SITE response:" \
 		 "\tCURL return code: $RET_CODE, \tHTTP return code: $RETURN_OK"
 	
 	_logging "\tMessage: `grep -i location $DGT_LOGIN_HEADER | piconv -f big5 -t utf-8`" \
 		 "\tTry re-logout from $DGT_LOGOUT_URL, $DGT_LOGOUT_OK_URL."
 	logout_from_SITE
-	echo "" 
+	echo ""
+	touch DGTERR. 
 	abort "Please try again......" 
     fi
-    _logging "$FUNCNAME: leave LOGIN TO CHECK SITE."  "..."
+    rm -f DGTERR
+    _logging "$FUNCNAME(): leave LOGIN TO CHECK SITE."  "..."
+#    set -e
 }
 
 login_content_string_DGT() {
@@ -383,7 +407,7 @@ login_content_string_DGT() {
 		    -e "s/'//g" -e "s/yUID$/yUID=$DGT_ACT/g" | \
 		    tr '\n' '&' | sed 's/&$//g' 
 	    `"
-    _logging "$FUNCNAME" "_LOGIN_CONTENT: $_LOGIN_CONTENT"
+    _logging "$FUNCNAME()" "_LOGIN_CONTENT: $_LOGIN_CONTENT"
 }
 
 function setting_DGT() {
@@ -428,7 +452,6 @@ function setting_DGT() {
 function DGT() {
 
     #setting_DGT
-
     _logging 'PHASE I: LOGIN'
     login_to_DGT
     login_content_string_DGT
@@ -448,6 +471,129 @@ function DGT() {
     _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }
+#--TCT
+function _fetch_bytxt_TCT() {
+
+    local LCNT=1
+    rm -f $LIST_FILE
+    while true ; do
+	read FLR <&0
+        EOF_FLR=$?
+	if [ $EOF_FLR == 1 ] ; then break; fi
+	date_str="$(echo $FLR | gawk -F '|' '{print $1}')"
+	time_str="$(echo $FLR | gawk -F '|' '{print $2}')"
+	title="`echo $FLR | gawk -F "|" '{print $3}'`"
+	url=`echo $FLR | gawk -F "|" '{print $4}'`
+        echo $date_str, $title, $url
+	echo $LCNT"|"$title | tee -a $LIST_FILE
+	curl $VERBOSE  $url \
+	   --output $TCT_LOCATION/$LCNT 
+	LCNT=$(expr $LCNT + 1)
+    done
+}
+
+function _rss2txt_formatter_TCT() {
+    while true ; do
+	read FLR <&0
+        EOF_FLR=$?
+	if [ $EOF_FLR == 1 ] ; then break; fi
+	date_str="$(date --date="`echo $FLR | gawk -F "|" '{print $1}'`" +%Y%m%d"|"%X)"
+	title="`echo $FLR | gawk -F "|" '{print $2}'`"
+	url=`echo $FLR | gawk -F "|" '{print $3}'`
+        echo $date_str"|"$title"|"$url
+    done
+}
+function fetch_news_list_TCT() {
+
+    #ORIG_FILE=$TCT_NEWS_LIST_RESULT
+   
+    LIST_FILE="./$TCT_NEWS_LOC/`date +%Y%m%d`".listing
+    mkdir -p $TCT_LOCATION
+    local today_str="`date +%Y%m%d`"
+
+    _logging "Function -> $FUNCNAME()" "TCT_LOCATION: $TCT_LOCATION"
+
+    perl ./TCT-list.pl $TCT_NEWS_LIST_RESULT 2>/dev/null | \
+	 _rss2txt_formatter_TCT | grep ^$today_str | _fetch_bytxt_TCT
+}
+
+function setting_TCT() {
+
+    # Begin other CFG of "$WNS_CONFIG".............................................................
+    TCT_LOCATION="./$TCT_NEWS_LOC/`date +%Y%m%d`"
+    #TCT_RSS_F=technology-u.rss
+    #TCT_RSS_URL=http://rss.chinatimes.com/rss
+    TCT_URL=http://$DGT_SITE
+
+    #TCT_LOCAL_SIGN_URL=lgn/check.asp
+
+    #TCT_LOGIN_POST_URL=$DGT_URL/default.asp
+
+    #TCT_LOGIN_POST_HEADER=$WNS_LOG/DGT_LOGIN_POST.header
+    #TCT_LOGIN_POST_RESULT=$WNS_LOG/DGT_LOGIN_POST.result
+
+    #TCT_LOGOUT_URL=$DGT_URL/asp/buttonlogout.asp
+    #TCT_LOGOUT_RESULT=$WNS_LOG/DGT_LOGOUT.result
+
+    TCT_NEWS_LIST_URL=http://rss.chinatimes.com/rss/technology-u.rss
+    TCT_NEWS_LIST_RESULT=$WNS_LOG/TCT_NEWS_LIST.result
+
+    TCT_COOKIE_JAR=
+    
+    _LOCATION=$TCT_LOCATION
+
+    #_LOGIN_POST_URL=$TCT_LOGIN_POST_URL
+
+    #_LOGIN_POST_HEADER=$TCT_LOGIN_POST_HEADER
+    #_LOGIN_POST_RESULT=$TCT_LOGIN_POST_RESULT
+
+    #_LOGOUT_URL=$TCT_LOGOUT_URL
+    #_LOGOUT_RESULT=$TCT_LOGOUT_RESULT
+
+    _NEWS_LIST_URL=$TCT_NEWS_LIST_URL
+    _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT
+
+    _COOKIE_JAR=$TCT_COOKIE_JAR
+
+    _NEWS_REPORT=$TCT_LOCATION.listing
+}
+
+function TCT() {
+
+    #setting_DGT
+    _logging 'PHASE I: LOGIN (NO LOGIN)'
+    #login_to_DGT
+    #login_content_string_DGT
+    #login_post_to_SITE 
+
+    _logging 'PHASE II: GET NEWS LISTING'
+    #fetch_news_list_report
+
+    _logging 'PHASE III: FETCH NEWS'
+    #fetch_news_list_TCT
+
+    _logging 'PHASE IV: LOGOUT (NO LOGOUT )'
+    #logout_from_SITE
+
+    _logging 'PHASE V: Transfer HTML to TEXT'
+    transfer_ht2txt
+    _logging 'PHASE V: Transfer HTML to RTF'
+    transfer_txt2rtf
+}
+
+
+function ht2txt() {
+    setting_DGT
+    transfer_ht2txt
+    setting_TPG
+    transfer_ht2txt
+}
+function txt2rtf() {
+    setting_DGT
+    transfer_txt2rtf
+    setting_TPG
+    transfer_txt2rtf
+}
 
 function tag_parsing_bydate() {
     #echo $1 $2 $3
@@ -460,7 +606,7 @@ function tag_parsing_bydate() {
     cat <&0 > $PARSE_SEQ_F
 
     # disable errexit shelloption $ set +e
-    set +e
+#    set +e
     #echo SHELLOPTS: $SHELLOPTS
 
     while true ; do
@@ -472,17 +618,19 @@ function tag_parsing_bydate() {
 	case "$SITE_NAME" in 
 	    DGT) local PARSED_F=$DGT_NEWS_LOC/$PARSE_DATE.listing ;;
 	    TPG) local PARSED_F=$TPG_NEWS_LOC/$PARSE_DATE.listing ;;
+	    TCT) local PARSED_F=$TCT_NEWS_LOC/$PARSE_DATE.listing ;;
+	    xxx) local PARSED_F=$TPG_NEWS_LOC/$PARSE_DATE.listing ;;
 	    *) echo Error pasing type: $1. ; return 1 ;
 	esac 
 
 	tag_parsing_file $PARSE_SEQ_F $PARSED_F $PARSE_DATE $SITE_NAME
-
 	i=`expr $i + 1 `
 	if [ $i == $days ] ; then break ; fi
+	#echo $i, $days
     done
     
     rm -f $PARSE_SEQ_F
-    set -e
+    #set -e
 }
 
 function tag_parsing() {
@@ -547,7 +695,7 @@ function tag_one_line() {
     SORT_F=`mktemp`
     SEQ_F=`mktemp`
 
-    set +e
+#    set +e
 
     cat <&0 > $SORT_F
     cat $SORT_F | gawk -F '|' '{print $1"|"$2"|"$3}' | gawk -F '[.,]' '{print $1}' | sort |uniq > $SEQ_F
@@ -561,7 +709,7 @@ function tag_one_line() {
 	if [ $EOF == 1 ] ; then break ; fi
 
 	#grep -i '|'$L_CNT'[.|,]' $SORT_F 
-	TITLE=`grep -i $L_CNT $SORT_F | gawk -F '|' '{print $3}' | gawk -F '[.,]' '{print $2}' | head -n 1`
+	TITLE=`grep -i $L_CNT $SORT_F | gawk -F '|' '{print $3}' | gawk -F '[.,]' '{print $2 $3 $4}' | head -n 1`
 	#echo $TITLE
 	TAGS=`grep -i $L_CNT $SORT_F | \
 		gawk -F '|' '{print $4}' | tr ',' '\n' | \
@@ -571,14 +719,14 @@ function tag_one_line() {
     echo "" >&2
     exec 3>&-
     rm -f $SORT_F $SEQ_F
-    set -e
+    #set -e
 }
 
 function add_folder_tag () {
 
 FOLDER_TAG_TABLE=folder.tab
 
-set +e
+#set +e
 if [ $1. == "". ] ; then
     ARTICLE_TAG_REPORT=`mktemp`
     cat <&0 > $ARTICLE_TAG_REPORT
@@ -654,7 +802,7 @@ rm -f $FOLDER_TAG
 if [ $1. == "". ] ; then
     rm -f $ARTICLE_TAG_REPORT
 fi
-set -e
+#set -e
 }
 
 function move_folder() {
@@ -669,7 +817,8 @@ function move_folder() {
 	SITE=$(site_root_path "`echo $FLR | gawk -F "|" '{print $1}'`")
 	DATE=`echo $FLR | gawk -F "|" '{print $2}'`
         SEQ="$(expr $(echo $FLR | gawk -F "|" '{print $3}') + 0 )""$NEWS_EXTEN"
-	TARGET="`echo $FLR | gawk -F "|" '{print $4}' | sed -e 's/^ //g' -e 's/ $//g'`$NEWS_EXTEN"
+	TARGET="`echo $FLR | gawk -F "|" '{print $4}' | \
+		sed -e 's/^ //g' -e 's/ $//g' -e 's/?/？/g' -e 's/\//／/g'`$NEWS_EXTEN"
         LOCATION="$NEWS_ROOT_PATH/`echo $FLR | gawk -F "|" '{print $7}'`"
 	
         SRC="$SITE/$DATE/$SEQ"
@@ -686,19 +835,52 @@ function move_folder() {
 
 }
 
+function tag_txt2rtf() {
 
+header="`perl rtf-header.pl| sed 's/\\\\chpgn//g' | tr '\n' ' ' | sed -e 's/^ //g' -e 's|\\\\|\\\\\\\\|g'`"
+orig_header='^{\\header\\pard\\qr\\plain\\f2\\fs17$'
+remove_string='.*\\chpgn\\par}$'
+
+    while true ; do
+	read FLR <&0
+	FLR_EOF=$?
+	if [ $FLR_EOF == 1 ] ; then break ; fi
+	SCODE="`echo $FLR | gawk -F "|" '{print $1}'`"
+	SITE=$(site_root_path "$SCODE")
+	DATE=`echo $FLR | gawk -F "|" '{print $2}'`
+        SEQ="$(expr $(echo $FLR | gawk -F "|" '{print $3}') + 0 )"
+	TITLE="`echo $FLR | gawk -F "|" '{print $4}' | \
+		sed -e 's/^ //g' -e 's/ $//g' -e 's/?/？/g'`"
+	TAGS="`echo $FLR | gawk -F "|" '{print $5}'`"
+	TXT_F=$SITE/$DATE/$SEQ.txt
+	RTF_F=$SITE/$DATE/$SEQ.rtf
+	#echo $SITE, $DATE, $SEQ, $TARGET, $TAGS	
+	header="`perl rtf-header.pl "$(site_rtf_header $SCODE)" | sed 's/\\\\chpgn//g' | tr '\n' ' ' | \
+		 sed -e 's/^ //g' -e 's|\\\\|\\\\\\\\|g'`"
+	echo $TXT_F, $TAGS
+	#(echo '<H1>'$TITLE'</H1><BR>'; cat $TXT_F; echo '<BR><BR><BR>' Keyword: $TAGS '<BR>') | \
+	#    sed 's/。$/。<BR><BR>/g' | \
+	#    sed 's/。 /。<BR><BR>/g' | \
+	#    sed 's/; /<BR><BR>/g'  | \
+#		 ./ht2rtf.pl  2> /dev/nul | \
+#		 sed -e "s/$remove_string//g" -e "s|$orig_header|$header|g" > $RTF_F
+	(echo '<H1>'$TITLE'</H1><BR>'; cat $TXT_F; echo '<BR><BR><BR>' Keyword: $TAGS '<BR>') | \
+		 ./ht2rtf.pl  2> /dev/nul | \
+		 sed -e "s/$remove_string//g" -e "s|$orig_header|$header|g" > $RTF_F
+    done
+}
 
 __show_help() {
 	cat <<-_EOF
 		${_name} is a fetch web news program.
 
-		Usage: ${_name} [ [ -d <value> | --debug <value> ] [ --DGT | --TPG ] | [ --help | --version ]
+		Usage: ${_name} [ [ -d <value> | --debug <value> ] [ < --SITE > ] | [--help|--version]
 		Tags usage: ${_name} --tag-seq [seq] | --tag-parsing-bydate < SITE > <date> <daynum> ] |
-		             [ [...parsing-parametrs] --tag-parsing < SITE >] | --tag-one-line
+		             [ [...parsing-parametrs] --tag-parsing < SITE >] | --tag-one-line 
 		Tab usage: ${_name}  --create-tag-tab | --create-folder-tab
 		folder tag: ${_name} --add-folder-tag | --move-folder [ fldr-tag-report ]
 
-		    -d, --debug <value> : setup debug value;   --DGT: news site DGT;  --TPG: news site TPG.
+		    -d, --debug <value> : setup debug value; 
 
 		    --tag-seq [seq]: parse specific seq no from tags table(types.tab). seq(ref)
 		    --tag-parsing:	    ;	--tag-parsing-bydate: 
@@ -711,6 +893,7 @@ __show_help() {
 		    --create-folder-tab: output folder table to STDOUT from clipboard.
 
 		    --help: show this message.;	    --version: show version.
+		    SITE: --TPG | --DGT | --TCT
 
 		    REF:    seq exampe: 135, 1-5, 12345, 1-9, 0-9, -- ; '--' is all seq.
 		            Tags example: ${_name} --tag-seq 1-3 | ${_name} --tag-parsing < DGT | TPG >
@@ -718,12 +901,14 @@ __show_help() {
 		            Tags parsing: parsing DGT from 20090204, parse 2 days (20090204, 20090205)
 		                          ${_name} --tag-parsing-bydate "DGT 20090204 2"
 		    STEP:
-		        ${_name} --debug 300 DGT ; ${_name} --debug 300 TPG	# fetch article
+		        ${_name} --debug 300 --DGT ; ${_name} --debug 300 --TPG	#fetch article, result listing.
 		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "DGT 20090206 1" > res.1 #parse-res
 		        ${_name} --tag-seq -- | ${_name} --tag-parsing-bydate "TPG 20090206 1" > res.2
 		        cat res.1 res.2 | ${_name} --tag-one-line > 20090206.tag-report ;# tag-report
 		        cat 20090206.tag-report | ${_name} --add-folder-tag > 20090206.fldr-report #fldr-report
 		        cat 20090206.fldr-report | ${_name} --move-folder 
+		        ${_name} --txt2rtf | --ht2txt
+		        cat 20090206.tag-report | ${_name} --tag-txt2rtf
 		_EOF
 }
 
@@ -750,11 +935,12 @@ source $WNS_CONFIG
 
 # check options...
 COMMON_OP="help,version,debug:"
-FETCH_OP="DGT,dgt,TPG,tpg"
-TAG_OP="tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line"
+SITE_OP="DGT,TPG,TCT"
+FETCH_OP="txt2rtf,ht2txt"
+TAG_OP="tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,tag-txt2rtf"
 FLDR_OP="add-folder-tag,move-folder"
 TAB_OP="create-tag-tab,create-folder-tab"
-ALL_OP="$TAB_OP,$TAG_OP,$FETCH_OP,$COMMON_OP,$FLDR_OP"
+ALL_OP="$SITE_OP,$TAB_OP,$TAG_OP,$FETCH_OP,$COMMON_OP,$FLDR_OP"
 OPT=`getopt -o Dd:,hHvV --long $ALL_OP -- "$@"`
 #OPT=`getopt -o Dd:,hHvV \
 #	--long create-tag-tab,tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,DGT,dgt,TPG,tpg,help,version,debug: -- "$@"`
@@ -765,10 +951,15 @@ if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$OPT"
 if [  $# -eq 1 ] ; then __show_help; fi
 #echo $#, $1, $2, $3, $4
+set +e
 while true ; do
     case "$1" in
         --DGT|--dgt)	setting_DGT;    DGT ;    shift 	;    ;;
         --TPG|--tpg)    setting_TPG;    TPG ;    shift 	;    ;;
+        --TCT)    setting_TCT;    TCT ;    shift 	;    ;;
+	--txt2rtf)	txt2rtf; shift ;;
+	--ht2txt)	ht2txt; shift ;;
+	--tag-txt2rtf)  tag_txt2rtf; shift ;; 
 	--create-tag-tab) 
 	    getclip | b5utf8 | d2u |egrep -v '(^seq|^\(0|^\"seq|title全為英文|^.*OR.*NOT)'; shift ;;
 	--create-folder-tab) 
@@ -783,7 +974,7 @@ while true ; do
 	    #echo $1 $2
 	    ;;
 	--tag-one-line)	    tag_one_line ;    shift ;;
-	--tag-parsing-bydate) tag_parsing_bydate $2 $3 $4; shift 3 ;;
+	--tag-parsing-bydate) tag_parsing_bydate $2 $3 $4; shift 2 ;;
 
 	--tag-parsing)
 		PARSE_D="`date  +%Y%m%d`"
@@ -814,5 +1005,7 @@ while true ; do
         --)		shift   ;	break 	    ;;
 	*)		shift 	;;
     esac
+    #echo OPT: $OPT
+      
 done
 
