@@ -45,12 +45,12 @@ function fetch_news() {
 	set -e
 	echo abort: $abort , will abort, please try again manual.
 	#return 100
-	exec fales
+	#exec fales
 	exit 1
     fi
     echo TPG procedure starting.....
     wns.sh --debug 300 --TPG
-    #wns.sh --debug 300 --TCT
+    wns.sh --debug 300 --TCT
 }
 function __fetch() {
 
@@ -62,7 +62,7 @@ function __fetch() {
 function __parse() {
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "DGT $TODAY 1" |tee $REPORT/$TODAY-parse.DGT 
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TPG $TODAY 1" |tee $REPORT/$TODAY-parse.TPG
-    #wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TCT $TODAY 1" |tee $REPORT/$TODAY-parse.TCT
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TCT $TODAY 1" |tee $REPORT/$TODAY-parse.TCT
 }
 function __tagging() {
     cat $REPORT/$TODAY-parse.DGT $REPORT/$TODAY-parse.TPG $REPORT/$TODAY-parse.TCT | \
@@ -82,8 +82,10 @@ function __copy_report {
 
     local year=`expr substr $TODAY 1 4`
     local month=$(expr `expr substr $TODAY 5 2` + 0 )
+    local day=$(expr `expr substr $TODAY 7 2` + 0 )
+    local day_d="$month""月""$day""日"
 
-    local target="$base"/"$year""年產業新聞報"/"$year""年"$month"月"
+    local target="$base"/"$year""年產業新聞報"/"$year""年"$month"月"/$day_d
 
     echo copy $REPORT/$TODAY.tag-report to  $target
     echo copy $REPORT/$TODAY.folder to  $target
