@@ -72,7 +72,6 @@ function setting_TCT() {
     # Begin other CFG of "$WNS_CONFIG".............................................................
     TCT_LOCATION="./$TCT_NEWS_LOC/`date +%Y%m%d`"
     #TCT_RSS_F=technology-u.rss
-    #TCT_RSS_URL=http://rss.chinatimes.com/rss
     TCT_URL=http://$DGT_SITE
 
     #TCT_LOCAL_SIGN_URL=lgn/check.asp
@@ -127,17 +126,17 @@ function TCT() {
     _NEWS_LIST_URL=$TCT_RSS1
     _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT1
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _NEWS_LIST_URL=$TCT_RSS2
     _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT2
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _NEWS_LIST_URL=$TCT_RSS3
     _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT3
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     #_logging 'PHASE III: FETCH NEWS'
     fetch_news_list_TCT
