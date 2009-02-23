@@ -46,10 +46,10 @@ function fetch_news_list_EET() {
 
     _logging "Function -> $FUNCNAME()" "EET_LOCATION: $EET_LOCATION"
 
-    (perl ./TCT-list.pl ./wns_log/EET_NEWS_LIST.result1 ;\
-	 perl ./TCT-list.pl ./wns_log/EET_NEWS_LIST.result2 ;\
-	 perl ./TCT-list.pl ./wns_log/EET_NEWS_LIST.result3 ;\
-	 perl ./TCT-list.pl ./wns_log/EET_NEWS_LIST.result4 ;\
+    (perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result1 ;\
+	 perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result2 ;\
+	 perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result3 ;\
+	 perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result4 ;\
 	 ) 2>/dev/null |\
 	 _rss2txt_formatter_EET | grep ^$today_str | _fetch_bytxt_EET
    # perl ./EET-list.pl $EET_NEWS_LIST_RESULT 2>/dev/null | \
@@ -86,7 +86,7 @@ function EET() {
     _NEWS_LIST_URL=$EET_RSS1
     _NEWS_LIST_RESULT=$EET_NEWS_LIST_RESULT1
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _logging 'PHASE III: FETCH NEWS'
     fetch_news_list_EET

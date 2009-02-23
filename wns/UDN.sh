@@ -17,8 +17,8 @@ function _fetch_bytxt_UDN() {
 	#echo $LIST_FILE 
 	echo $(expr substr `expr 1000 + $LCNT` 2 3 )"|"$title | tee -a $LIST_FILE
 	#echo curl  $VERBOSE  $url  --output $UDN_LOCATION/$LCNT 
-#	wget --quiet $url \
-#	   --output-document $UDN_LOCATION/$LCNT 
+	wget --quiet $url \
+	   --output-document $UDN_LOCATION/$LCNT 
 	LCNT=$(expr $LCNT + 1)
     done
 }
@@ -46,10 +46,10 @@ function fetch_news_list_UDN() {
 
     _logging "Function -> $FUNCNAME()" "UDN_LOCATION: $UDN_LOCATION"
 
-    (perl ./TCT-list.pl ./wns_log/UDN_NEWS_LIST.result1 ;\
-	 perl ./TCT-list.pl ./wns_log/UDN_NEWS_LIST.result2 ;\
-	 perl ./TCT-list.pl ./wns_log/UDN_NEWS_LIST.result3 ;\
-	 perl ./TCT-list.pl ./wns_log/UDN_NEWS_LIST.result4 ;\
+    (perl ./rss2list.pl ./wns_log/UDN_NEWS_LIST.result1 ;\
+	 perl ./rss2list.pl ./wns_log/UDN_NEWS_LIST.result2 ;\
+	 perl ./rss2list.pl ./wns_log/UDN_NEWS_LIST.result3 ;\
+	 perl ./rss2list.pl ./wns_log/UDN_NEWS_LIST.result4 ;\
 	 ) 2>/dev/null |\
 	 _rss2txt_formatter_UDN | grep ^$today_str | _fetch_bytxt_UDN
    # perl ./UDN-list.pl $UDN_NEWS_LIST_RESULT 2>/dev/null | \
@@ -92,25 +92,25 @@ function UDN() {
     _NEWS_LIST_URL=$UDN_RSS1
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT1
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-    #fetch_news_list_report
+#    fetch_news_list_report
 
     _NEWS_LIST_URL=$UDN_RSS2
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT2
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-    #fetch_news_list_report
+#    fetch_news_list_report
 
     _NEWS_LIST_URL=$UDN_RSS3
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT3
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-    #fetch_news_list_report
+#    fetch_news_list_report
 
     _NEWS_LIST_URL=$UDN_RSS4
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT4
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-    #fetch_news_list_report
+#    fetch_news_list_report
 
     _logging 'PHASE III: FETCH NEWS'
-    #fetch_news_list_UDN
+    fetch_news_list_UDN
 
 #    _logging 'PHASE IV: LOGOUT (NO LOGOUT )'
 #    #logout_from_SITE
