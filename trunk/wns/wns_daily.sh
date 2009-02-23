@@ -8,6 +8,9 @@ LOG=../LOG
 
 if [ ! -d $DGT_NEWS_LOC ] ; then mkdir $DGT_NEWS_LOC ; fi
 if [ ! -d $TPG_NEWS_LOC ] ; then mkdir $TPG_NEWS_LOC ; fi
+if [ ! -d $TCT_NEWS_LOC ] ; then mkdir $TCT_NEWS_LOC ; fi
+if [ ! -d $UDN_NEWS_LOC ] ; then mkdir $UDN_NEWS_LOC ; fi
+if [ ! -d $EET_NEWS_LOC ] ; then mkdir $EET_NEWS_LOC ; fi
 if [ ! -d $LOG ] ; then mkdir $LOG ; fi
 if [ ! -d $REPORT ] ; then mkdir $REPORT ; fi
 
@@ -51,6 +54,8 @@ function fetch_news() {
     echo TPG procedure starting.....
     wns.sh --debug 300 --TPG
     wns.sh --debug 300 --TCT
+    wns.sh --debug 300 --UDN
+    wns.sh --debug 300 --EET
 }
 function __fetch() {
 
@@ -63,9 +68,15 @@ function __parse() {
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "DGT $TODAY 1" |tee $REPORT/$TODAY-parse.DGT 
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TPG $TODAY 1" |tee $REPORT/$TODAY-parse.TPG
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TCT $TODAY 1" |tee $REPORT/$TODAY-parse.TCT
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "UDN $TODAY 1" |tee $REPORT/$TODAY-parse.UDN
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EET $TODAY 1" |tee $REPORT/$TODAY-parse.EET
 }
 function __tagging() {
-    cat $REPORT/$TODAY-parse.DGT $REPORT/$TODAY-parse.TPG $REPORT/$TODAY-parse.TCT | \
+    cat $REPORT/$TODAY-parse.DGT \
+	$REPORT/$TODAY-parse.TPG \
+	$REPORT/$TODAY-parse.TCT \
+	$REPORT/$TODAY-parse.UDN \
+	$REPORT/$TODAY-parse.EET | \
 	 wns.sh --tag-one-line | tee $REPORT/$TODAY.tag-report 
 }
 function __rtf() {
