@@ -62,9 +62,6 @@ function setting_EET() {
     EET_LOCATION="./$EET_NEWS_LOC/`date +%Y%m%d`"
     EET_URL=http://$EET_SITE
 
- #?   EET_NEWS_LIST_URL=http://rss.chinatimes.com/rss/technology-u.rss
- #?   EET_NEWS_LIST_RESULT=$WNS_LOG/EET_NEWS_LIST.result
-
     EET_COOKIE_JAR=
     
     _LOCATION=$EET_LOCATION
@@ -91,12 +88,10 @@ function EET() {
     _logging 'PHASE III: FETCH NEWS'
     fetch_news_list_EET
 
-#    _logging 'PHASE IV: LOGOUT (NO LOGOUT )'
-#    #logout_from_SITE
 
-#    _logging 'PHASE V: Transfer HTML to TEXT'
+    _logging 'PHASE V: Transfer HTML to TEXT'
     transfer_ht2txt
-#    _logging 'PHASE V: Transfer HTML to RTF'
+    _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }
 

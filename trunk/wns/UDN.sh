@@ -62,9 +62,6 @@ function setting_UDN() {
     UDN_LOCATION="./$UDN_NEWS_LOC/`date +%Y%m%d`"
     UDN_URL=http://$UDN_SITE
 
- #?   UDN_NEWS_LIST_URL=http://rss.chinatimes.com/rss/technology-u.rss
- #?   UDN_NEWS_LIST_RESULT=$WNS_LOG/UDN_NEWS_LIST.result
-
     UDN_COOKIE_JAR=
     
     _LOCATION=$UDN_LOCATION
@@ -92,32 +89,29 @@ function UDN() {
     _NEWS_LIST_URL=$UDN_RSS1
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT1
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _NEWS_LIST_URL=$UDN_RSS2
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT2
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _NEWS_LIST_URL=$UDN_RSS3
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT3
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _NEWS_LIST_URL=$UDN_RSS4
     _NEWS_LIST_RESULT=$UDN_NEWS_LIST_RESULT4
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
-#    fetch_news_list_report
+    fetch_news_list_report
 
     _logging 'PHASE III: FETCH NEWS'
     fetch_news_list_UDN
 
-#    _logging 'PHASE IV: LOGOUT (NO LOGOUT )'
-#    #logout_from_SITE
-
-#    _logging 'PHASE V: Transfer HTML to TEXT'
+    _logging 'PHASE V: Transfer HTML to TEXT'
     transfer_ht2txt
-#    _logging 'PHASE V: Transfer HTML to RTF'
+    _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }
 
