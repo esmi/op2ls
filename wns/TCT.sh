@@ -15,7 +15,7 @@ function _fetch_bytxt_TCT() {
         echo $date_str, $title, $url
 	#echo $LIST_FILE 
 	echo $(expr substr `expr 1000 + $LCNT` 2 3 )"|"$title | tee -a $LIST_FILE
-	curl  $VERBOSE --connect-timeout 15  $url  --output $TCT_LOCATION/$LCNT 
+	curl  $VERBOSE --connect-timeout 30  $url  --output $TCT_LOCATION/$LCNT 
 	echo return code: $?
 	#wget --quiet $url \
 	#   --output-document $TCT_LOCATION/$LCNT 
@@ -59,10 +59,14 @@ function fetch_news_list_TCT() {
     ( head $TCT_NEWS_LIST_RESULT3 -n 1 | sed 's/^.*</</g' ; \
 	 tail -n `wc -l $TCT_NEWS_LIST_RESULT3 | gawk '{print $1}'` $TCT_NEWS_LIST_RESULT3 ) \
 	     > $TCT_NEWS_LIST_RESULT3.1
+    ( head $TCT_NEWS_LIST_RESULT4 -n 1 | sed 's/^.*</</g' ; \
+	 tail -n `wc -l $TCT_NEWS_LIST_RESULT4 | gawk '{print $1}'` $TCT_NEWS_LIST_RESULT4 ) \
+	     > $TCT_NEWS_LIST_RESULT4.1
 
     (./rss2list.pl $TCT_NEWS_LIST_RESULT1.1; \
 	./rss2list.pl $TCT_NEWS_LIST_RESULT2.1; \
-	./rss2list.pl $TCT_NEWS_LIST_RESULT3.1 ; ) 2>/dev/null | \
+	./rss2list.pl $TCT_NEWS_LIST_RESULT3.1; \
+	./rss2list.pl $TCT_NEWS_LIST_RESULT4.1 ; ) 2>/dev/null | \
 	 _rss2txt_formatter_TCT | grep ^$today_str | _fetch_bytxt_TCT
     #./rss2list.pl wns_log/TCT_NEWS_LIST_RESULT.2     
 }
@@ -119,9 +123,11 @@ function TCT() {
     TCT_NEWS_LIST_URL1=$TCT_RSS1
     TCT_NEWS_LIST_URL2=$TCT_RSS2
     TCT_NEWS_LIST_URL3=$TCT_RSS3
+    TCT_NEWS_LIST_URL4=$TCT_RSS4
     TCT_NEWS_LIST_RESULT1=$WNS_LOG/TCT_NEWS_LIST.result1
     TCT_NEWS_LIST_RESULT2=$WNS_LOG/TCT_NEWS_LIST.result2
     TCT_NEWS_LIST_RESULT3=$WNS_LOG/TCT_NEWS_LIST.result3
+    TCT_NEWS_LIST_RESULT4=$WNS_LOG/TCT_NEWS_LIST.result4
 
     _NEWS_LIST_URL=$TCT_RSS1
     _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT1
@@ -135,6 +141,11 @@ function TCT() {
 
     _NEWS_LIST_URL=$TCT_RSS3
     _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT3
+    echo _NEWS_LIST_URL: $_NEWS_LIST_URL
+    fetch_news_list_report
+
+    _NEWS_LIST_URL=$TCT_RSS4
+    _NEWS_LIST_RESULT=$TCT_NEWS_LIST_RESULT4
     echo _NEWS_LIST_URL: $_NEWS_LIST_URL
     fetch_news_list_report
 

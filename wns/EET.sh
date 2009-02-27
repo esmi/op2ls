@@ -46,10 +46,10 @@ function fetch_news_list_EET() {
 
     _logging "Function -> $FUNCNAME()" "EET_LOCATION: $EET_LOCATION"
 
-    (perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result1 ;\
-	 perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result2 ;\
-	 perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result3 ;\
-	 perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result4 ;\
+	 #perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result2 ;\
+	 #perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result3 ;\
+	 #perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result4 ;\
+    (perl ./rss2list.pl ./wns_log/EET_NEWS_LIST.result ;\
 	 ) 2>/dev/null |\
 	 _rss2txt_formatter_EET | grep ^$today_str | _fetch_bytxt_EET
    # perl ./EET-list.pl $EET_NEWS_LIST_RESULT 2>/dev/null | \
@@ -78,7 +78,7 @@ function EET() {
 
     _logging 'PHASE II: GET NEWS LISTING'
     EET_NEWS_LIST_URL1=$EET_RSS1
-    EET_NEWS_LIST_RESULT1=$WNS_LOG/EET_NEWS_LIST.result1
+    EET_NEWS_LIST_RESULT1=$WNS_LOG/EET_NEWS_LIST.result
 
     _NEWS_LIST_URL=$EET_RSS1
     _NEWS_LIST_RESULT=$EET_NEWS_LIST_RESULT1
@@ -90,7 +90,7 @@ function EET() {
 
 
     _logging 'PHASE V: Transfer HTML to TEXT'
-    transfer_ht2txt
+    transfer_ht2txt2
     _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }

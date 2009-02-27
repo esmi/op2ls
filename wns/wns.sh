@@ -15,6 +15,8 @@ function site_root_path() {
 	ret=$UDN_NEWS_LOC ;;
     EET)
 	ret=$EET_NEWS_LOC ;;
+    EDG)
+	ret=$EDG_NEWS_LOC ;;
     *)
 	ret="" ;;
     esac
@@ -33,6 +35,8 @@ function site_rtf_header() {
 	ret=$UDN_NAME ;;
     EET)
 	ret=$EET_NAME ;;
+    EDG)
+	ret=$EDG_NAME ;;
     *)
 	ret="" ;;
     esac
@@ -46,7 +50,28 @@ function transfer_ht2txt() {
         rm -f $_LOCATION/*.txt 
 
 	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$)'` ; do
-	    ./ht2html.pl  $i  2> /dev/nul | piconv -f big5 -t utf-8 > $i.txt
+	    ./ht2html.pl  $i  2> /dev/nul | \
+		    piconv -f big5 -t utf-8 | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
+            echo -n '.'
+	done
+    else
+	echo -e "\tDirectory: $_LOCATION, is not exist."
+	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
+    fi
+    echo ""
+}
+
+function transfer_ht2txt2() {
+
+    if [ -d $_LOCATION ]; then
+        rm -f $_LOCATION/*.txt 
+
+	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$|html$)'` ; do
+	    cat $i | piconv -f big5 -t utf-8 | perl ./ht2html2.pl   2> /dev/null | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.html
+	    perl ./ht2html.pl $i.html 2> /dev/null | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
             echo -n '.'
 	done
     else
@@ -486,17 +511,34 @@ function DGT() {
 source TCT.sh
 source UDN.sh
 source EET.sh
+source EDG.sh
 
 function ht2txt() {
     setting_DGT
     transfer_ht2txt
     setting_TPG
     transfer_ht2txt
+    setting_TCT
+    transfer_ht2txt
+    setting_UDN
+    transfer_ht2txt
+    setting_EET
+    transfer_ht2txt2
+    setting_EDG
+    transfer_ht2txt
 }
 function txt2rtf() {
     setting_DGT
     transfer_txt2rtf
     setting_TPG
+    transfer_txt2rtf
+    setting_TCT
+    transfer_txt2rtf
+    setting_UDN
+    transfer_txt2rtf
+    setting_EET
+    transfer_txt2rtf
+    setting_EDG
     transfer_txt2rtf
 }
 
@@ -526,6 +568,7 @@ function tag_parsing_bydate() {
 	    TCT) local PARSED_F=$TCT_NEWS_LOC/$PARSE_DATE.listing ;;
 	    UDN) local PARSED_F=$UDN_NEWS_LOC/$PARSE_DATE.listing ;;
 	    EET) local PARSED_F=$EET_NEWS_LOC/$PARSE_DATE.listing ;;
+	    EDG) local PARSED_F=$EDG_NEWS_LOC/$PARSE_DATE.listing ;;
 	    xxx) local PARSED_F=$xxx_NEWS_LOC/$PARSE_DATE.listing ;;
 	    *) echo Error pasing type: $1. ; return 1 ;
 	esac 
@@ -727,6 +770,7 @@ function move_folder() {
 
     #NEWS_ROOT_PATH=./WNS_RTF # define in wns.cfg.
     NEWS_EXTEN=".rtf"
+    current_dir=`pwd`
     while true ; do
 
 	read FLR <&0
@@ -747,30 +791,45 @@ function move_folder() {
         #echo move $SRC to $DEST
 	RTF_FILE="$DEST$NEWS_EXTEN"
 	TOUCH_FILE="$DEST""　　　　　　""KEY：$TAGS"
-	TOUCH_FILE="`echo $TOUCH_FILE | sed 's/ //g'`"
+	#TOUCH_FILE="`echo $TOUCH_FILE | sed 's/ //g'`"
 	mkdir -p "$LOCATION"
         cp "$SRC" "$RTF_FILE"
-	touch "$TOUCH_FILE"
+
+	dir_d=`dirname "$RTF_FILE"`
+	target=`basename "$RTF_FILE"`
+	shortcut=`basename "$TOUCH_FILE"`
+	#echo shortcut: "$shortcut"
+	#echo target: "$target"
+	#echo dir_d: "$dir_d"
+
+	pushd "$current_dir"
+	cd "$dir_d"
+	mkshortcut -n "`echo $shortcut|piconv -f utf8 -t big5`" \
+		-w "`echo $dir_d | piconv -f utf-8 -t big5`"  \
+		"`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
 	ret_touch=$?
+	attrib +h "$shortcut".lnk 2> /dev/null
+	popd
+
+	#touch "$TOUCH_FILE"
 	if [ $ret_touch -gt 0 ] ; then
-	   #echo ret_touch: $ret_touch, "$TOUCH_FILE"
-	   echo File length: `expr length "$TOUCH_FILE"`
-	else
-	    attrib +h "$TOUCH_FILE"
-	    ret_attrib=$?
-	    
-	    if [ $ret_touch -gt 0 ] ; then
-		echo ret_attrib: $ret_attrib, "$TOUCH_FILE"
-	    fi
+	    #echo "TARGET:" `ls -l "$RTF_FILE"`
+	    echo ret_touch: $ret_touch, "$dir_d" : "$target"
+	    #echo File length: `expr length "$TOUCH_FILE"`
+	#else
+	#    attrib +h "$TOUCH_FILE"
+	#    ret_attrib=$?
+	#    
+	#    if [ $ret_touch -gt 0 ] ; then
+	#	echo ret_attrib: $ret_attrib, "$TOUCH_FILE"
+	#    fi
 	fi
 
 	#u8 attrib +h "$TOUCH_FILE" ; retcode=$?
 	#echo ret: $retcode , ret_touch: $ret_touch, "$TOUCH_FILE"
 	#ls \""$TOUCH_FILE"\" -l
 	#u8 attrib +h \""`cygpath -w "$TOUCH_FILE" | piconv -f utf-8 -t big5`"\"
-
     done
-
 }
 
 function tag_txt2rtf() {
@@ -829,7 +888,7 @@ __show_help() {
 		    --create-folder-tab: output folder table to STDOUT from clipboard.
 
 		    --help: show this message.;	    --version: show version.
-		    SITE: --TPG | --DGT | --TCT | --UDN | --EET
+		    SITE: --TPG | --DGT | --TCT | --UDN | --EET | --EDG
 		    REF:    seq exampe: 135, 1-5, 12345, 1-9, 0-9, -- ; '--' is all seq.
 		            Tags example: ${_name} --tag-seq 1-3 | ${_name} --tag-parsing < DGT | TPG >
 		                          ${_name} --tag-seq 135 | ${_name} --tag-parsing < DGT | TPG >
@@ -870,7 +929,7 @@ source $WNS_CONFIG
 
 # check options...
 COMMON_OP="help,version,debug:"
-SITE_OP="DGT,TPG,TCT,UDN,EET"
+SITE_OP="DGT,TPG,TCT,UDN,EET,EDG"
 FETCH_OP="txt2rtf,ht2txt"
 TAG_OP="tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,tag-txt2rtf"
 FLDR_OP="add-folder-tag,move-folder"
@@ -894,6 +953,7 @@ while true ; do
         --TCT)    setting_TCT;    TCT ;    shift 	;    ;;
         --UDN)    setting_UDN;    UDN ;    shift 	;    ;;
         --EET)    setting_EET;    EET ;    shift 	;    ;;
+        --EDG)    setting_EDG;    EDG ;    shift 	;    ;;
 	--txt2rtf)	txt2rtf; shift ;;
 	--ht2txt)	ht2txt; shift ;;
 	--tag-txt2rtf)  tag_txt2rtf; shift ;; 
