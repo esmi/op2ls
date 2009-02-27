@@ -11,18 +11,21 @@ if [ ! -d $TPG_NEWS_LOC ] ; then mkdir $TPG_NEWS_LOC ; fi
 if [ ! -d $TCT_NEWS_LOC ] ; then mkdir $TCT_NEWS_LOC ; fi
 if [ ! -d $UDN_NEWS_LOC ] ; then mkdir $UDN_NEWS_LOC ; fi
 if [ ! -d $EET_NEWS_LOC ] ; then mkdir $EET_NEWS_LOC ; fi
+if [ ! -d $EDG_NEWS_LOC ] ; then mkdir $EDG_NEWS_LOC ; fi
 if [ ! -d $LOG ] ; then mkdir $LOG ; fi
 if [ ! -d $REPORT ] ; then mkdir $REPORT ; fi
 
 NAS_BASE='\\kh-nas\社群資料區\新產品開發專案管理\新產品開發專案管理\BI_經企\以程式處理BI資訊'
+__abort=false
 
 function fetch_news() {
     local i=1
+    #local sleep_t=30m
     local sleep_t=10s
-    local times=2
+    local times=3
     local abort=false
     echo DGT procedure starting.....
-
+    
     while true ; do
 
 	if [ $i -gt $times ] ; then 
@@ -30,7 +33,9 @@ function fetch_news() {
 	    abort=true  
 	    break;
 	else
+	    set +e 
 	    wns.sh --debug 300 --DGT 
+	    set -e
 	    abort=false
 	fi 
 
@@ -45,18 +50,20 @@ function fetch_news() {
 
     done
     if [ $abort == true ] ; then 
-	set -e
 	echo abort: $abort , will abort, please try again manual.
-	#return 100
-	#exec fales
-	exit 1
+	if [ $__abort == true ] ; then
+	    exit 1
+	fi
     fi
     echo TPG procedure starting.....
-    wns.sh --debug 300 --TPG
-    wns.sh --debug 300 --TCT
-    wns.sh --debug 300 --UDN
-    wns.sh --debug 300 --EET
+    wns.sh --debug 300 --TPG --TCT --UDN --EET --EDG
+    #wns.sh --debug 300 --TCT
+    #wns.sh --debug 300 --UDN
+    #wns.sh --debug 300 --EET
+    #wns.sh --debug 300 --EDG
+
 }
+
 function __fetch() {
 
     fetch_news 2>&1  
@@ -70,13 +77,15 @@ function __parse() {
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TCT $TODAY 1" |tee $REPORT/$TODAY-parse.TCT
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "UDN $TODAY 1" |tee $REPORT/$TODAY-parse.UDN
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EET $TODAY 1" |tee $REPORT/$TODAY-parse.EET
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EDG $TODAY 1" |tee $REPORT/$TODAY-parse.EDG
 }
 function __tagging() {
     cat $REPORT/$TODAY-parse.DGT \
 	$REPORT/$TODAY-parse.TPG \
 	$REPORT/$TODAY-parse.TCT \
 	$REPORT/$TODAY-parse.UDN \
-	$REPORT/$TODAY-parse.EET | \
+	$REPORT/$TODAY-parse.EET \
+	$REPORT/$TODAY-parse.EDG | \
 	 wns.sh --tag-one-line | tee $REPORT/$TODAY.tag-report 
 }
 function __rtf() {
@@ -215,7 +224,7 @@ __show_help() {
 	cat <<-_EOF
 		${_name} is a fetch web news program.
 
-		Usage: ${_name} --today | --nofetch | --xls2tab | --deploy-data | --help | 
+		Usage: ${_name} [ --disable-abort | --enable-abort ] --today | --nofetch | --xls2tab | --deploy-data | --help | 
 		          [--fetch] [--parse] --tagging --rtf --tag-folder --move --copy-report
 
 		        --today: run following step by step:
@@ -237,10 +246,10 @@ __show_help() {
 
 
 #__man
-
+ABORT_OP="disable-abort,enable-abort"
 COMMON_OP="today,nofetch,help,xls2tab,deploy-data"
 GEN_OP="fetch,parse,tagging,rtf,tag-folder,move,copy-report"
-ALL_OP="$GEN_OP,$COMMON_OP"
+ALL_OP="$GEN_OP,$COMMON_OP,$ABORT_OP"
 OPT=`getopt -o "" --longoptions=$ALL_OP -- "$@"`
 
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
@@ -252,6 +261,8 @@ if [  $# -eq 1 ] ; then __show_help; fi
 set -e
 while true ; do
     case "$1" in
+        --enable-abort)		__abort=true;       shift ;;
+        --disable-abort)	__abort=false;       shift ;;
         --today)	__today;       break ;;
 	--nofetch)      __nofetch;     break ;;
         --fetch)	__fetch;       shift ;;
@@ -264,7 +275,7 @@ while true ; do
 	--help)		__show_help;   break ;;
 	--copy-report)	__copy_report; shift ;;
 	--deploy-data)	__deploy_data; break ;;
-        --)		shift ;	       break ;;
+        --)		break ;;
 	*)		__show_help;   break ;;
     esac
 done 
