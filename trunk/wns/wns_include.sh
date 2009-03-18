@@ -72,11 +72,11 @@ warning() {
 
 # displays information message
 inform() {
-	echo -e "\e[1;32m*** Info:\e[0;0m ${1}";
+	echo -e "\e[1;32m*** Info:\e[0;0m ${1}" >&2 ;
 }
 
 debug() {
-	echo -e "\e[1;34m*** debug:\e[0;0m ${1}";
+	echo -e "\e[1;34m*** debug:\e[0;0m ${1}" >&2 ;
 }
 
 # displays command to stdout before execution

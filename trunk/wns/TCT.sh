@@ -15,10 +15,10 @@ function _fetch_bytxt_TCT() {
         echo $date_str, $title, $url
 	#echo $LIST_FILE 
 	echo $(expr substr `expr 1000 + $LCNT` 2 3 )"|"$title | tee -a $LIST_FILE
-	curl  $VERBOSE --connect-timeout 30  $url  --output $TCT_LOCATION/$LCNT 
-	echo return code: $?
-	#wget --quiet $url \
-	#   --output-document $TCT_LOCATION/$LCNT 
+	#curl  $VERBOSE --connect-timeout 30  $url  --output $TCT_LOCATION/$LCNT 
+	#echo return code: $?
+	wget --quiet $url \
+	   --output-document $TCT_LOCATION/$LCNT 
 	LCNT=$(expr $LCNT + 1)
     done
 }
@@ -156,7 +156,7 @@ function TCT() {
     #logout_from_SITE
 
     _logging 'PHASE V: Transfer HTML to TEXT'
-    transfer_ht2txt
+    transfer_ht2txt3
     _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }
