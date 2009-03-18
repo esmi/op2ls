@@ -12,11 +12,22 @@ if [ ! -d $TCT_NEWS_LOC ] ; then mkdir $TCT_NEWS_LOC ; fi
 if [ ! -d $UDN_NEWS_LOC ] ; then mkdir $UDN_NEWS_LOC ; fi
 if [ ! -d $EET_NEWS_LOC ] ; then mkdir $EET_NEWS_LOC ; fi
 if [ ! -d $EDG_NEWS_LOC ] ; then mkdir $EDG_NEWS_LOC ; fi
+if [ ! -d $IEK_NEWS_LOC ] ; then mkdir $IEK_NEWS_LOC ; fi
+if [ ! -d $MTR_NEWS_LOC ] ; then mkdir $MTR_NEWS_LOC ; fi
+if [ ! -d $PCB_NEWS_LOC ] ; then mkdir $PCB_NEWS_LOC ; fi
 if [ ! -d $LOG ] ; then mkdir $LOG ; fi
 if [ ! -d $REPORT ] ; then mkdir $REPORT ; fi
+#
+#PS: KH-NAS every morning, reboot time: am7:40 - am8:10
+#
+#NAS_HOST=
+NAS_SHARE="\\\\kh-nas\\社群資料區"
+NAS_BASE='//kh-nas/社群資料區/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
+#NAS_PWD=_
+#NAS_USR=
 
-NAS_BASE='\\kh-nas\社群資料區\新產品開發專案管理\新產品開發專案管理\BI_經企\以程式處理BI資訊'
 __abort=false
+_name=`basename $0`
 
 function fetch_news() {
     local i=1
@@ -56,7 +67,7 @@ function fetch_news() {
 	fi
     fi
     echo TPG procedure starting.....
-    wns.sh --debug 300 --TPG --TCT --UDN --EET --EDG
+    wns.sh --debug 300 --TPG --TCT --UDN --EET --EDG --MTR --PCB
     #wns.sh --debug 300 --TCT
     #wns.sh --debug 300 --UDN
     #wns.sh --debug 300 --EET
@@ -77,7 +88,12 @@ function __parse() {
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TCT $TODAY 1" |tee $REPORT/$TODAY-parse.TCT
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "UDN $TODAY 1" |tee $REPORT/$TODAY-parse.UDN
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EET $TODAY 1" |tee $REPORT/$TODAY-parse.EET
-    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EDG $TODAY 1" |tee $REPORT/$TODAY-parse.EDG
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EDG $TODAY 1" |tee $REPORT/$TODAY-parse.EDG.orig
+    cat $REPORT/$TODAY-parse.EDG.orig | \
+	     gawk -F '|' '{print $1"|"$2"|"$3"|"$4"|"$5",English|"$6"|"$7"|"$8"|"$9}' | \
+	     tee $REPORT/$TODAY-parse.EDG
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "MTR $TODAY 1" |tee $REPORT/$TODAY-parse.MTR
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "PCB $TODAY 1" |tee $REPORT/$TODAY-parse.PCB
 }
 function __tagging() {
     cat $REPORT/$TODAY-parse.DGT \
@@ -85,7 +101,10 @@ function __tagging() {
 	$REPORT/$TODAY-parse.TCT \
 	$REPORT/$TODAY-parse.UDN \
 	$REPORT/$TODAY-parse.EET \
-	$REPORT/$TODAY-parse.EDG | \
+	$REPORT/$TODAY-parse.EDG \
+	$REPORT/$TODAY-parse.MTR \
+	$REPORT/$TODAY-parse.PCB \
+	    | \
 	 wns.sh --tag-one-line | tee $REPORT/$TODAY.tag-report 
 }
 function __rtf() {
@@ -98,7 +117,7 @@ function __move() {
     cat $REPORT/$TODAY.folder | wns.sh --move-folder |tee $LOG/$TODAY-move.log
 }
 function __copy_report {
-    local base='/usr/src/opt/wns/WNS_RTF/產業新聞'
+    local base='../WNS_RTF/產業新聞'
 
     local year=`expr substr $TODAY 1 4`
     local month=$(expr `expr substr $TODAY 5 2` + 0 )
@@ -112,6 +131,72 @@ function __copy_report {
 
     cp $REPORT/$TODAY.tag-report $target
     cp $REPORT/$TODAY.folder $target
+}
+
+function __tar2nas {
+    local base="../WNS_RTF/產業新聞"
+    TODAY='20090307'
+    local year=`expr substr $TODAY 1 4`
+    local month=$(expr `expr substr $TODAY 5 2` + 0 )
+    local day=$(expr `expr substr $TODAY 7 2` + 0 )
+    local day_d="$month""月""$day""日"
+    local today_d="$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+    local source="$base"/"$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+    local target="//kh-nas/公共分享區/產業分析資料/產業新聞/$today_d"
+    src_d="`cygpath -w $source`"
+    dst_d=`cygpath -w "$target" `
+    echo $source
+    echo $src_d
+    echo $dst_d
+    rm -rf "$dst_d"
+    mkdir -p "$target"
+    echo cmd /c "xcopy $src_d $dst_d /A /E /H"
+    cmd /c "xcopy $src_d $dst_d /A /E /H"
+}
+
+function __tar2bi {
+
+    local base="../WNS_RTF/產業新聞"
+    #TODAY='20090307'
+    local year=`expr substr $TODAY 1 4`
+    local month=$(expr `expr substr $TODAY 5 2` + 0 )
+    local day=$(expr `expr substr $TODAY 7 2` + 0 )
+    local day_d="$month""月""$day""日"
+    local today_d="$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+    local source="$base"/"$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+    set +e
+    src_d="`cygpath -w $source`"
+    dst_d=`cygpath -w "$NAS_BASE/WNS_RTF-200902/產業新聞/$today_d" `
+    echo $source
+    echo $src_d
+    echo $dst_d
+    rm -rf "$dst_d"
+    mkdir -p "$dst_d"
+    echo cmd /c "xcopy $src_d $dst_d /A /E /H"
+    cmd /c "xcopy $src_d $dst_d /A /E /H"
+    set -e
+}
+
+__naschk_tar2bi() {
+    #NAS_HOST="\\\\host-for-not-available"
+    local fail=0
+    local try_times=10
+    local sleep_time=5m
+    while true; do  
+        if [ -e $NAS_HOST ] ; then 
+	    __nas_connect
+	    __tar2bi
+	    break 
+	else 
+	    echo $NAS_HOST is not available.....'('$fail')' times
+	    sleep $sleep_time
+	    fail=$(expr $fail + 1)
+	    if [ $fail -gt $try_times ] ; then
+		echo  Fail: $NAS_HOST is not available after check 10 times.
+		break
+	    fi
+	fi
+    done
 }
 
 function __deploy_data {
@@ -143,10 +228,9 @@ function __nofetch() {
 function __today() {
     daily_start=`date "+%x %X"`
 
-    echo Fetch XLS table to text table.
-    __xls2tab
-
     if [ "$1". == "". ] ; then
+	echo Fetch XLS table to text table.
+        __xls2tab
 	echo FETCH WEB DATA .......
         fetch_start=`date "+%x %X"`
 	__fetch
@@ -176,9 +260,11 @@ function __today() {
 }
 function __xls2tab() {
 
-    path='\\kh-nas\社群資料區\新產品開發專案管理\新產品開發專案管理\BI_經企\以程式處理BI資訊'
+    path='//kh-nas/社群資料區/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
     table='BI新聞分類機制.xls'
     XLSTBL="$path/$table"
+    #XLSTBL="`echo $XLSTBL | piconv -f utf-8 -t big5`"
+    echo XLSTAB: $XLSTBL
 
     TODAY="`date +%Y%m%d`"
 
@@ -194,7 +280,7 @@ function __xls2tab() {
     echo "       $XLSTBL"
     echo "    to $TODAY_TAB"
 
-    if [ -e $XLSTBL ] ; then
+    if [ -e "$XLSTBL" ] ; then
 	cp "$XLSTBL" $TODAY_TAB
         cp $TODAY_TAB $DEFAULT_TAB
 
@@ -218,14 +304,56 @@ function __xls2tab() {
     fi
 }
 
-_name=`basename $0`
+__schedule_nofetch() {
+    __nofetch 2>../log/$TODAY-today-nof.err.log 1>../log/$TODAY-today-nof.log
+    __tar2bi 2>../log/$TODAY-tar2bi-nof.err.log 1>../log/$TODAY-tar2bi-nof.log
+}
+__schedule_task() {
+    echo "`date`" >../log/$TODAY-task.start
+    __today 2>../log/$TODAY-today.err.log 1>../log/$TODAY-today.log
+    __naschk_tar2bi 2>../log/$TODAY-tar2bi.err.log 1>../log/$TODAY-tar2bi.log
+    echo "`date`" >../log/$TODAY-task.stop
+}
+__schedule_env() {
+
+    TIME="$(date +%H%M%S)" 
+    ls -l  $NAS_BASE > ../log/$TODAY-$TIME--schedule-test.log
+    net use | piconv -f big5 -t utf-8 >> ../log/$TODAY-$TIME--schedule-env.log
+}
+
+__nas_connect() {
+    
+    echo net use "$NAS_SHARE"  "$NAS_PWD" /USER:"$NAS_USR"
+    net use "$NAS_SHARE"  "$NAS_PWD" /USER:"$NAS_USR" | piconv -f big5 -t utf-8
+
+}
+
+__nas_disconnect() {
+    echo net use "$NAS_SHARE" /delete
+    (net use "$NAS_SHARE" /delete /y; ret=$? )2>&1| piconv -f big5 -t utf-8
+    ret=$?
+    echo net use /delete'('$ret')'
+}
+
+__check() {
+    echo $1
+    grep "$1" ../FETCH/*/$TODAY.listing
+    echo "--------------------------------------------------------------------------------------"
+    #grep "$1" ../REPORT/$TODAY-parse.*
+    grep "$1" ../REPORT/$TODAY.tag-report
+    echo "--------------------------------------------------------------------------------------"
+    grep "$1" ../REPORT/$TODAY.folder
+}
 
 __show_help() {
 	cat <<-_EOF
 		${_name} is a fetch web news program.
 
-		Usage: ${_name} [ --disable-abort | --enable-abort ] --today | --nofetch | --xls2tab | --deploy-data | --help | 
-		          [--fetch] [--parse] --tagging --rtf --tag-folder --move --copy-report
+		Usage: ${_name} [ --disable-abort | --enable-abort ] [ --today | --nofetch | --xls2tab | 
+		                  --deploy-data | --tar2bi | --tar2nas | 
+				  --schedule-task | --schedule-nofetch | --schedule-env |
+				  --nas-connect | --nas-disconnect | --naschk-tar2bi | --help  ]
+			        [--fetch] [--parse] [--tagging] [--rtf] [--tag-folder] [--move] [--copy-report]
 
 		        --today: run following step by step:
 		                     --fetch, --parse, --tagging, --rtf, --tag-folder, --move, --copy-report
@@ -237,19 +365,28 @@ __show_help() {
 		        --rtf: create rtf and add it tags to the rtf file.
 		        --tag-folder: add folder tag to folder report.
 		        --move: read from folder report and cp article to folder.
-			--copy-report: copy *.tag-report *.folder to target folder.
+		        --copy-report: copy *.tag-report *.folder to target folder.
 
-			--xls2tab: transfer xls tables to text format
+		        --schedule-task: run schedule on win32 taskmanager.
+		        --schedule-nofetch: same as --schedule-task but nofetch web site news.
+
+		        --schedule-env: test schedule environment to ../log/TODAY-TIME-schedlue-test.log
+		        --nas-connect, --nas-disconnect: connect/disconnect NAS connect.
+		        --naschk-tar2bi: check nas, if it unavailable, sleep, recheck, if available re-connect.
+		                       and run --tar2bi.
+		        --xls2tab: transfer xls tables to text format from NAS storage.
 		        --deploy-data: deploy wns data to NAS storage.
+			--check:  check "\$1" exist in ../FETCH/*/*.listing or exist in ../REPORT/\$TODAY.folder
 		_EOF
 }
 
 
 #__man
 ABORT_OP="disable-abort,enable-abort"
-COMMON_OP="today,nofetch,help,xls2tab,deploy-data"
+COMMON_OP="today,nofetch,help,xls2tab,deploy-data,tar2bi,tar2nas,check:"
+SCHEDULE_OP="schedule-task,schedule-nofetch,schedule-env,nas-connect,nas-disconnect,naschk-tar2bi"
 GEN_OP="fetch,parse,tagging,rtf,tag-folder,move,copy-report"
-ALL_OP="$GEN_OP,$COMMON_OP,$ABORT_OP"
+ALL_OP="$GEN_OP,$COMMON_OP,$ABORT_OP,$SCHEDULE_OP"
 OPT=`getopt -o "" --longoptions=$ALL_OP -- "$@"`
 
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
@@ -257,7 +394,6 @@ if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 #echo OPT: $OPT
 eval set -- "$OPT"
 if [  $# -eq 1 ] ; then __show_help; fi
-#echo $#, $1, $2, $3, $4
 set -e
 while true ; do
     case "$1" in
@@ -275,6 +411,15 @@ while true ; do
 	--help)		__show_help;   break ;;
 	--copy-report)	__copy_report; shift ;;
 	--deploy-data)	__deploy_data; break ;;
+	--tar2bi)	__tar2bi; break ;;
+	--tar2nas)	__tar2nas; break ;;
+	--schedule-task)	__schedule_task; shift ;;
+	--schedule-nofetch)	__schedule_nofetch; shift ;;
+	--schedule-env)	__schedule_env; shift ;;
+	--nas-connect)  __nas_connect; shift;;
+	--nas-disconnect) __nas_disconnect; shift;;
+	--naschk-tar2bi)	__naschk_tar2bi; break ;;
+	--check)	__check $2; shift; shift;;
         --)		break ;;
 	*)		__show_help;   break ;;
     esac

@@ -17,6 +17,12 @@ function site_root_path() {
 	ret=$EET_NEWS_LOC ;;
     EDG)
 	ret=$EDG_NEWS_LOC ;;
+    IEK)
+	ret=$IEK_NEWS_LOC ;;
+    MTR)
+	ret=$MTR_NEWS_LOC ;;
+    PCB)
+	ret=$PCB_NEWS_LOC ;;
     *)
 	ret="" ;;
     esac
@@ -37,21 +43,27 @@ function site_rtf_header() {
 	ret=$EET_NAME ;;
     EDG)
 	ret=$EDG_NAME ;;
+    IEK)
+	ret=$IEK_NAME ;;
+    MTR)
+	ret=$MTR_NAME ;;
+    PCB)
+	ret=$PCB_NAME ;;
     *)
 	ret="" ;;
     esac
     echo "Create date: `date +%Y/%m/%d-%r` $ret"
-
 }
 
 function transfer_ht2txt() {
+		    #piconv -f big5 -t utf-8 | \
 
     if [ -d $_LOCATION ]; then
         rm -f $_LOCATION/*.txt 
 
 	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$)'` ; do
 	    ./ht2html.pl  $i  2> /dev/nul | \
-		    piconv -f big5 -t utf-8 | \
+		    auto-utf8.pl | \
 		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
             echo -n '.'
 	done
@@ -64,13 +76,61 @@ function transfer_ht2txt() {
 
 function transfer_ht2txt2() {
 
+    RAW_CODE="big5"
+    if [ "$1". == "gb2312". ] ; then
+	RAW_CODE="gb2312"
+    fi
+
     if [ -d $_LOCATION ]; then
         rm -f $_LOCATION/*.txt 
 
 	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$|html$)'` ; do
-	    cat $i | piconv -f big5 -t utf-8 | perl ./ht2html2.pl   2> /dev/null | \
+	    cat $i | piconv -f "$RAW_CODE" -t utf-8 | perl ./ht2html2.pl   2> /dev/null | \
 		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.html
 	    perl ./ht2html.pl $i.html 2> /dev/null | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
+            echo -n '.'
+	done
+    else
+	echo -e "\tDirectory: $_LOCATION, is not exist."
+	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
+    fi
+    echo ""
+}
+
+function transfer_ht2txt3() {
+
+    if [ -d $_LOCATION ]; then
+        rm -f $_LOCATION/*.txt 
+
+	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$|html$)'` ; do
+	    cat $i | auto-utf8.pl | perl ./ht2html2.pl   2> /dev/null | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.html
+	    perl ./ht2html.pl $i.html 2> /dev/null | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
+            echo -n '.'
+	done
+    else
+	echo -e "\tDirectory: $_LOCATION, is not exist."
+	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
+    fi
+    echo ""
+}
+
+transfer_ht2txt4() {
+
+    RAW_CODE="big5"
+    if [ "$1". == "gb2312". ] ; then
+	RAW_CODE="gb2312"
+    fi
+
+    if [ -d $_LOCATION ]; then
+        rm -f $_LOCATION/*.txt 
+
+	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$|html$)'` ; do
+	    cat $i | piconv -f "$RAW_CODE" -t utf-8 | perl ./ht2html2.pl   2> /dev/null | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.html
+	    cat $i.html | perl ht2html2.pl 2> /dev/null | \
 		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
             echo -n '.'
 	done
@@ -158,10 +218,11 @@ function login_post_to_SITE() {
 
     _logging "Function -> $FUNCNAME()" "_LOGIN_POST_URL: $_LOGIN_POST_URL"
 
+#POST /$TPG_LOCAL_SIGN_URL HTTP/1.1
     curl $VERBOSE  -c $_COOKIE_JAR -D $_LOGIN_POST_HEADER\
 	    -X POST --data-ascii "`
 	    cat <<-EOF
-		POST /$TPG_LOCAL_SIGN_URL HTTP/1.1
+		POST /$_LOCAL_SIGN_URL HTTP/1.1
 		Content-type: application/x-www-form-urlencoded
 
 		$_LOGIN_CONTENT
@@ -249,6 +310,7 @@ function setting_TPG() {
 
     TPG_LOCAL_SIGN_URL=tri/sign.asp
     TPG_LOGIN_POST_URL=$TPG_URL/$TPG_LOCAL_SIGN_URL
+    _LOCAL_SIGN_URL=$TPG_LOCAL_SIGN_URL
 
     TPG_LOGIN_POST_HEADER=$WNS_LOG/TPG_LOGIN_POST.header
     TPG_LOGIN_POST_RESULT=$WNS_LOG/TPG_LOGIN_POST.result
@@ -453,7 +515,7 @@ function setting_DGT() {
     DGT_URL=http://$DGT_SITE
 
     DGT_LOCAL_SIGN_URL=lgn/check.asp
-
+    _LOCAL_SIGN_URL=$DGT_LOCAL_SIGN_URL
     DGT_LOGIN_POST_URL=$DGT_URL/default.asp
 
     DGT_LOGIN_POST_HEADER=$WNS_LOG/DGT_LOGIN_POST.header
@@ -512,6 +574,9 @@ source TCT.sh
 source UDN.sh
 source EET.sh
 source EDG.sh
+source IEK.sh
+source MTR.sh
+source PCB.sh
 
 function ht2txt() {
     setting_DGT
@@ -519,13 +584,17 @@ function ht2txt() {
     setting_TPG
     transfer_ht2txt
     setting_TCT
-    transfer_ht2txt
+    transfer_ht2txt3
     setting_UDN
-    transfer_ht2txt
+    transfer_ht2txt3
     setting_EET
     transfer_ht2txt2
     setting_EDG
     transfer_ht2txt
+    setting_MTR
+    transfer_ht2txt
+    setting_PCB
+    transfer_ht2txt4
 }
 function txt2rtf() {
     setting_DGT
@@ -539,6 +608,10 @@ function txt2rtf() {
     setting_EET
     transfer_txt2rtf
     setting_EDG
+    transfer_txt2rtf
+    setting_MTR
+    transfer_txt2rtf
+    setting_PCB
     transfer_txt2rtf
 }
 
@@ -569,6 +642,9 @@ function tag_parsing_bydate() {
 	    UDN) local PARSED_F=$UDN_NEWS_LOC/$PARSE_DATE.listing ;;
 	    EET) local PARSED_F=$EET_NEWS_LOC/$PARSE_DATE.listing ;;
 	    EDG) local PARSED_F=$EDG_NEWS_LOC/$PARSE_DATE.listing ;;
+	    IEK) local PARSED_F=$IEK_NEWS_LOC/$PARSE_DATE.listing ;;
+	    MTR) local PARSED_F=$MTR_NEWS_LOC/$PARSE_DATE.listing ;;
+	    PCB) local PARSED_F=$PCB_NEWS_LOC/$PARSE_DATE.listing ;;
 	    xxx) local PARSED_F=$xxx_NEWS_LOC/$PARSE_DATE.listing ;;
 	    *) echo Error pasing type: $1. ; return 1 ;
 	esac 
@@ -616,28 +692,41 @@ function tag_parsing_file() {
         EOF=$?
 
 	if [ $EOF == 1 ] ; then break ; fi
-	echo SEQ_L: $THIS_L >&2
+	#echo SEQ_L: $THIS_L >&2
         SEQ=`echo $THIS_L | gawk -F '|' '{print $1}'`
 	KEY=`echo $THIS_L | gawk -F '|' '{print $2}'`
         NOT=`echo $THIS_L | gawk -F '|' '{print $3}'`
 	CONTENT=`echo $THIS_L | gawk -F '|' '{print $4}'`
         TAG=`echo $THIS_L | gawk -F '|' '{print $5}' |  sed -e 's/, /,/g' -e 's/, /,/g' -e 's/^ //g'`
 	KEY=`echo $KEY | sed -e 's/, /,/g' -e 's/, /,/g'`
-        S_KEY='('`echo -n $KEY | sed 's/,/|/g'`')'
+        #S_KEY='('`echo -n $KEY | sed -e 's/,/|/g' -e 's/\//\\\//g' -e 's/^,//g' -e 's/,$//g'`')'
+        #S_KEY='('$(echo -n $KEY | sed -e 's/,/|/g' -e 's/\\/\\\\/g' -e 's/\//\\\//g' )')'
+        S_KEY='('$(echo -n $KEY | sed -e 's/,/|/g' -e 's/\//\\\//g' )')'
 	NOT=`echo $NOT | sed -e 's/, /,/g' -e 's/, /,/g'`
         S_NOT='('`echo -n $NOT | sed -e 's/,/|/g'`')'
 
 	if [ "$S_NOT". == '()'. ] ; then S_NOT='(@@%%&&%%@@$$$$)' ; fi
 
-        echo SEQ: $SEQ, TAG: $TAG, S_KEY: $S_KEY, S_NOT: \"$S_NOT\" >&2
+        echo TAG: $TAG, S_KEY: $S_KEY, NOT: $NOT >&2
+        echo SEQ: $SEQ, PARSE_DATE: $PARSE_DATE, S_NOT: \"$S_NOT\" >&2
+	    echo "s/$/|$TAG||$SEQ|$PARSE_DATE|$NOT/g" >&2 
+	    echo "s/^/$SITE_NAME|$PARSE_DATE|/g" >&2
 
         cat "$PARSED_F" | egrep -i "$S_KEY" | \
 	    egrep -v "$S_NOT" | \
-	    sed -e "s/$/|$TAG|$KEY|$SEQ|$PARSE_DATE|$NOT/g" -e "s/^/$SITE_NAME|$PARSE_DATE|/g"
-        #egrep -i "$S_KEY" "$PARSED_F" | \
-	#    egrep -v "$S_NOT" | \
-	#    sed -e "s/$/|$TAG|$KEY|$SEQ|$PARSE_DATE|$NOT/g" -e "s/^/$SITE_NAME|$PARSE_DATE|/g"
-	    #sed -e "s/$/|$TAG|$KEY|$SEQ|$PARSE_DATE|$NOT/g" -e "s/^/$SITE_NAME|$PARSE_DATE|/g"
+	    sed -e "s/$/|$TAG|$(echo -n $KEY| \
+				    sed -e 's/\\/\\\\/g' -e 's/\//\\\//g')|$SEQ|$PARSE_DATE|$( \
+				echo $NOT| sed -e 's/\\/\\\\/g' -e 's/\//\\\//g')/g" \
+		-e "s/^/$SITE_NAME|$PARSE_DATE|/g"
+	#1. $SITE_NAME
+	#2. $PARSE_DATE
+	#3. $SEQ
+	#4. $TITLE
+	#5. $TAG
+	#6. $KEY
+	#7. $SEQ
+	#8. $PARSE_DATE
+	#9. $NOT
     done
 
     #shopt -s execfail
@@ -722,8 +811,11 @@ while true; do
 	if [ $EOF == 1 ] ; then break ; fi
 
 	TAR_SEQ=`echo $line | gawk -F '|' '{print $1}'`
-        TAR_TAG=`echo $line | gawk -F '|' '{print $7}'| sed -e 's/ or /|/g' -e 's/"//g' | sed 's/^ //g'`
+        TAR_TAG='('`echo $line | gawk -F '|' '{print $7}'| \
+	    sed -e 's/ or /|/g' -e 's/"//g' -e 's/, /,/g' -e 's/ and /.*/g' | sed 's/^ //g' | sed 's/,/|/g'`')'
+	if [ "$TAR_TAG". == "". ] ; then TAR_TAG='@@@###' ; fi
 	#echo $TAGS | grep "$TAR_TAG"
+	_logging $TAGS $TAR_TAG
 	STR="`echo $TAGS | egrep "$TAR_TAG"`"
 	#echo line: $line
 
@@ -747,7 +839,7 @@ while true; do
 	    #echo artical tags: $TAGS
 	    #echo location tag: \"$TAR_TAG\"
 	    #echo directory: $dir_1/$dir_2/$dir_3/$dir_4/$dir_5
-	    echo $article'|'`echo $TAR_TAG|sed 's/|/,/g'`'|'$location
+	    echo $article'|'$(echo $TAR_TAG|sed -e  's/|/,/g' -e 's/^(//g' -e 's/)$//g')'|'$location
 	    break
 	fi
 	#echo "STR: " $STR
@@ -788,6 +880,85 @@ function move_folder() {
         SRC="$SITE/$DATE/$SEQ"
 	DEST="$LOCATION/$TARGET"
 
+    
+        #echo move $SRC to $DEST
+	RTF_FILE="$DEST$NEWS_EXTEN"
+	TOUCH_FILE="$DEST""　""KEY：$TAGS"
+	#TOUCH_FILE="`echo $TOUCH_FILE | sed 's/ //g'`"
+	mkdir -p "$LOCATION"
+        cp "$SRC" "$RTF_FILE"
+
+	dir_d=`dirname "$RTF_FILE"`
+	target=`basename "$RTF_FILE"`
+	shortcut=`basename "$TOUCH_FILE"`
+	#echo shortcut: "$shortcut"
+	#echo target: "$target"
+	#echo dir_d: "$dir_d"
+
+	pushd "$current_dir"
+	cd "$dir_d"
+	ln -sf "$target" "$shortcut"
+	_logging "SRC: $SRC, RTF_FILE: $RTF_FILE" "LOCATION: $LOCATION" "target: $target, shortcut: $shortcut"
+	#mkshortcut -n "`echo -n $shortcut|piconv -f utf-8 -t big5`" \
+	#	-w ./ \
+	#	"./`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
+	#mkshortcut -n "`echo $shortcut|piconv -f utf8 -t big5`" \
+	#	-w "`echo $dir_d | piconv -f utf-8 -t big5`"  \
+	#	"`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
+	#mkshortcut -n "$shortcut" \
+	#	-w "$dir_d"  \
+	#	"$target" 2> /dev/null
+	ret_touch=$?
+	attrib +h +A "$shortcut".lnk
+	popd
+	echo -n "."
+
+	#touch "$TOUCH_FILE"
+	#if [ $ret_touch -gt 0 ] ; then
+	#    #echo "TARGET:" `ls -l "$RTF_FILE"`
+	#    echo ret_touch: $ret_touch, "$dir_d" : "$target"
+	#    #echo File length: `expr length "$TOUCH_FILE"`
+	#else
+	#    attrib +h "$TOUCH_FILE"
+	#    ret_attrib=$?
+	#    
+	#    if [ $ret_touch -gt 0 ] ; then
+	#	echo ret_attrib: $ret_attrib, "$TOUCH_FILE"
+	#    fi
+	#fi
+
+	#u8 attrib +h "$TOUCH_FILE" ; retcode=$?
+	#echo ret: $retcode , ret_touch: $ret_touch, "$TOUCH_FILE"
+	#ls \""$TOUCH_FILE"\" -l
+	#u8 attrib +h \""`cygpath -w "$TOUCH_FILE" | piconv -f utf-8 -t big5`"\"
+    done
+}
+
+function __move_folder() {
+
+    #NEWS_ROOT_PATH=./WNS_RTF # define in wns.cfg.
+    NEWS_EXTEN=".rtf"
+    current_dir=`pwd`
+    while true ; do
+
+	read FLR <&0
+        EOF_FLR=$?
+	if [ $EOF_FLR == 1 ] ; then break; fi
+	SITE=$(site_root_path "`echo -n $FLR | gawk -F "|" '{print $1}'`")
+	DATE=`echo -n  $FLR | gawk -F "|" '{print $2}'`
+        SEQ="$(expr $(echo -n $FLR | gawk -F "|" '{print $3}') + 0 )""$NEWS_EXTEN"
+	TARGET="`echo -n $FLR | gawk -F "|" '{print $4}' | \
+		sed -e 's/^ //g' -e 's/ $//g' -e 's/?/？/g' -e 's/\//／/g'`"
+	TAGS="`echo -n $FLR | gawk -F "|" '{print $5}'`"
+
+        LOCATION="$NEWS_ROOT_PATH/`echo -n $FLR | gawk -F "|" '{print $7}'`"
+	
+        SRC="$SITE/$DATE/$SEQ"
+	DEST="$LOCATION/$TARGET"
+	echo $LOCATION
+	echo $TARGET
+	echo $DEST
+    
         #echo move $SRC to $DEST
 	RTF_FILE="$DEST$NEWS_EXTEN"
 	TOUCH_FILE="$DEST""　　　　　　""KEY：$TAGS"
@@ -804,11 +975,11 @@ function move_folder() {
 
 	pushd "$current_dir"
 	cd "$dir_d"
-	mkshortcut -n "`echo $shortcut|piconv -f utf8 -t big5`" \
-		-w "`echo $dir_d | piconv -f utf-8 -t big5`"  \
-		"`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
+	#mkshortcut -n "`echo $shortcut|piconv -f utf8 -t big5`" \
+	#	-w "`echo $dir_d | piconv -f utf-8 -t big5`"  \
+	#	"`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
 	ret_touch=$?
-	attrib +h "$shortcut".lnk 2> /dev/null
+	#attrib +h "$shortcut".lnk 2> /dev/null
 	popd
 
 	#touch "$TOUCH_FILE"
@@ -888,7 +1059,7 @@ __show_help() {
 		    --create-folder-tab: output folder table to STDOUT from clipboard.
 
 		    --help: show this message.;	    --version: show version.
-		    SITE: --TPG | --DGT | --TCT | --UDN | --EET | --EDG
+		    SITE: --TPG | --DGT | --TCT | --UDN | --EET | --EDG | --IEK | --MTR | --PCB
 		    REF:    seq exampe: 135, 1-5, 12345, 1-9, 0-9, -- ; '--' is all seq.
 		            Tags example: ${_name} --tag-seq 1-3 | ${_name} --tag-parsing < DGT | TPG >
 		                          ${_name} --tag-seq 135 | ${_name} --tag-parsing < DGT | TPG >
@@ -929,7 +1100,7 @@ source $WNS_CONFIG
 
 # check options...
 COMMON_OP="help,version,debug:"
-SITE_OP="DGT,TPG,TCT,UDN,EET,EDG"
+SITE_OP="DGT,TPG,TCT,UDN,EET,EDG,IEK,MTR,PCB"
 FETCH_OP="txt2rtf,ht2txt"
 TAG_OP="tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,tag-txt2rtf"
 FLDR_OP="add-folder-tag,move-folder"
@@ -954,6 +1125,9 @@ while true ; do
         --UDN)    setting_UDN;    UDN ;    shift 	;    ;;
         --EET)    setting_EET;    EET ;    shift 	;    ;;
         --EDG)    setting_EDG;    EDG ;    shift 	;    ;;
+        --IEK)    setting_IEK;    IEK ;    shift 	;    ;;
+        --MTR)    setting_MTR;    MTR ;    shift 	;    ;;
+        --PCB)    setting_PCB;    PCB ;    shift 	;    ;;
 	--txt2rtf)	txt2rtf; shift ;;
 	--ht2txt)	ht2txt; shift ;;
 	--tag-txt2rtf)  tag_txt2rtf; shift ;; 

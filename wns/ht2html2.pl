@@ -1,4 +1,5 @@
-    use HTML::ContentExtractor;
+#!/usr/bin/perl 
+use HTML::ContentExtractor;
 use LWP::UserAgent;
 use File::Slurp;
 use Encode;

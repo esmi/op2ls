@@ -110,7 +110,7 @@ function UDN() {
     fetch_news_list_UDN
 
     _logging 'PHASE V: Transfer HTML to TEXT'
-    transfer_ht2txt
+    transfer_ht2txt3
     _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }
