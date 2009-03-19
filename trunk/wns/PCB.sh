@@ -43,12 +43,12 @@ __PCB_report_raw() {
 	sed -e 's/ # \[//g'  -e 's/<DIV.*t>//g' -e 's/<\/DIV>//g' > $CHS_HTML
 
     cat $CHS_HTML | piconv -f utf-8 -t gb2312 | \
-	autob5 | piconv -f big5 -t utf-8 | sed 's/>$/><BR>#/g'  > $CHT_HTML
+	piconv -f gb2312 -t big5 | piconv -f big5 -t utf-8 | sed 's/>$/><BR>#/g'  > $CHT_HTML
     cat $CHT_HTML | tr '\n' '$' | tr '#' '\n' | \
 	sed -e 's/$//g' -e 's/^[ \t]*//g' -e 's/\$[ \t]*//g' > $RAW_REPORT1
 
     #cygstart j.html
-    local today_str="`date +%y-%m-%d`"
+    local today_str="`date --date="1 day ago" +%y-%m-%d`"
 
     cat $RAW_REPORT1 | grep -i $today_str | gawk -F 'nbsp;' '{print $2}' | sort | \
 	sed -e '/./,/^$/!d' -e 's/<\/a.*$//g' -e "s|<a href='|$PCB_SITE|g" -e "s/html'/html/g" | \
