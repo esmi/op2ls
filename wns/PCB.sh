@@ -43,7 +43,7 @@ __PCB_report_raw() {
 	sed -e 's/ # \[//g'  -e 's/<DIV.*t>//g' -e 's/<\/DIV>//g' > $CHS_HTML
 
     cat $CHS_HTML | piconv -f utf-8 -t gb2312 | \
-	piconv -f gb2312 -t big5 | piconv -f big5 -t utf-8 | sed 's/>$/><BR>#/g'  > $CHT_HTML
+	autob5 | piconv -f big5 -t utf-8 | sed 's/>$/><BR>#/g'  > $CHT_HTML
     cat $CHT_HTML | tr '\n' '$' | tr '#' '\n' | \
 	sed -e 's/$//g' -e 's/^[ \t]*//g' -e 's/\$[ \t]*//g' > $RAW_REPORT1
 
