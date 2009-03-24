@@ -62,9 +62,12 @@ function transfer_ht2txt() {
         rm -f $_LOCATION/*.txt 
 
 	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$)'` ; do
-	    ./ht2html.pl  $i  2> /dev/nul | \
-		    auto-utf8.pl | \
+	 cat  $i  2> /dev/nul | \
+		    auto-utf8.pl | ht2html2.pl 2> /dev/null | \
 		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
+	    #./ht2html.pl  $i  2> /dev/nul | \
+	#	    auto-utf8.pl | \
+	#	    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
             echo -n '.'
 	done
     else
@@ -879,7 +882,6 @@ function move_folder() {
 	
         SRC="$SITE/$DATE/$SEQ"
 	DEST="$LOCATION/$TARGET"
-
     
         #echo move $SRC to $DEST
 	RTF_FILE="$DEST$NEWS_EXTEN"
@@ -891,9 +893,7 @@ function move_folder() {
 	dir_d=`dirname "$RTF_FILE"`
 	target=`basename "$RTF_FILE"`
 	shortcut=`basename "$TOUCH_FILE"`
-	#echo shortcut: "$shortcut"
-	#echo target: "$target"
-	#echo dir_d: "$dir_d"
+	_logging "shortcut: $shortcut" "target: $target" "dir_d: $dir_d"
 
 	pushd "$current_dir"
 	cd "$dir_d"
@@ -902,104 +902,11 @@ function move_folder() {
 	#mkshortcut -n "`echo -n $shortcut|piconv -f utf-8 -t big5`" \
 	#	-w ./ \
 	#	"./`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
-	#mkshortcut -n "`echo $shortcut|piconv -f utf8 -t big5`" \
-	#	-w "`echo $dir_d | piconv -f utf-8 -t big5`"  \
-	#	"`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
-	#mkshortcut -n "$shortcut" \
-	#	-w "$dir_d"  \
-	#	"$target" 2> /dev/null
 	ret_touch=$?
 	attrib +h +A "$shortcut".lnk
 	popd
 	echo -n "."
 
-	#touch "$TOUCH_FILE"
-	#if [ $ret_touch -gt 0 ] ; then
-	#    #echo "TARGET:" `ls -l "$RTF_FILE"`
-	#    echo ret_touch: $ret_touch, "$dir_d" : "$target"
-	#    #echo File length: `expr length "$TOUCH_FILE"`
-	#else
-	#    attrib +h "$TOUCH_FILE"
-	#    ret_attrib=$?
-	#    
-	#    if [ $ret_touch -gt 0 ] ; then
-	#	echo ret_attrib: $ret_attrib, "$TOUCH_FILE"
-	#    fi
-	#fi
-
-	#u8 attrib +h "$TOUCH_FILE" ; retcode=$?
-	#echo ret: $retcode , ret_touch: $ret_touch, "$TOUCH_FILE"
-	#ls \""$TOUCH_FILE"\" -l
-	#u8 attrib +h \""`cygpath -w "$TOUCH_FILE" | piconv -f utf-8 -t big5`"\"
-    done
-}
-
-function __move_folder() {
-
-    #NEWS_ROOT_PATH=./WNS_RTF # define in wns.cfg.
-    NEWS_EXTEN=".rtf"
-    current_dir=`pwd`
-    while true ; do
-
-	read FLR <&0
-        EOF_FLR=$?
-	if [ $EOF_FLR == 1 ] ; then break; fi
-	SITE=$(site_root_path "`echo -n $FLR | gawk -F "|" '{print $1}'`")
-	DATE=`echo -n  $FLR | gawk -F "|" '{print $2}'`
-        SEQ="$(expr $(echo -n $FLR | gawk -F "|" '{print $3}') + 0 )""$NEWS_EXTEN"
-	TARGET="`echo -n $FLR | gawk -F "|" '{print $4}' | \
-		sed -e 's/^ //g' -e 's/ $//g' -e 's/?/？/g' -e 's/\//／/g'`"
-	TAGS="`echo -n $FLR | gawk -F "|" '{print $5}'`"
-
-        LOCATION="$NEWS_ROOT_PATH/`echo -n $FLR | gawk -F "|" '{print $7}'`"
-	
-        SRC="$SITE/$DATE/$SEQ"
-	DEST="$LOCATION/$TARGET"
-	echo $LOCATION
-	echo $TARGET
-	echo $DEST
-    
-        #echo move $SRC to $DEST
-	RTF_FILE="$DEST$NEWS_EXTEN"
-	TOUCH_FILE="$DEST""　　　　　　""KEY：$TAGS"
-	#TOUCH_FILE="`echo $TOUCH_FILE | sed 's/ //g'`"
-	mkdir -p "$LOCATION"
-        cp "$SRC" "$RTF_FILE"
-
-	dir_d=`dirname "$RTF_FILE"`
-	target=`basename "$RTF_FILE"`
-	shortcut=`basename "$TOUCH_FILE"`
-	#echo shortcut: "$shortcut"
-	#echo target: "$target"
-	#echo dir_d: "$dir_d"
-
-	pushd "$current_dir"
-	cd "$dir_d"
-	#mkshortcut -n "`echo $shortcut|piconv -f utf8 -t big5`" \
-	#	-w "`echo $dir_d | piconv -f utf-8 -t big5`"  \
-	#	"`echo $target| piconv -f utf-8 -t big5`" 2> /dev/null
-	ret_touch=$?
-	#attrib +h "$shortcut".lnk 2> /dev/null
-	popd
-
-	#touch "$TOUCH_FILE"
-	if [ $ret_touch -gt 0 ] ; then
-	    #echo "TARGET:" `ls -l "$RTF_FILE"`
-	    echo ret_touch: $ret_touch, "$dir_d" : "$target"
-	    #echo File length: `expr length "$TOUCH_FILE"`
-	#else
-	#    attrib +h "$TOUCH_FILE"
-	#    ret_attrib=$?
-	#    
-	#    if [ $ret_touch -gt 0 ] ; then
-	#	echo ret_attrib: $ret_attrib, "$TOUCH_FILE"
-	#    fi
-	fi
-
-	#u8 attrib +h "$TOUCH_FILE" ; retcode=$?
-	#echo ret: $retcode , ret_touch: $ret_touch, "$TOUCH_FILE"
-	#ls \""$TOUCH_FILE"\" -l
-	#u8 attrib +h \""`cygpath -w "$TOUCH_FILE" | piconv -f utf-8 -t big5`"\"
     done
 }
 
