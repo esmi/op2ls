@@ -55,6 +55,24 @@ function site_rtf_header() {
     echo "Create date: `date +%Y/%m/%d-%r` $ret"
 }
 
+function transfer_ht2txt0() {
+		    #piconv -f big5 -t utf-8 | \
+
+    if [ -d $_LOCATION ]; then
+        rm -f $_LOCATION/*.txt 
+
+	for i in `find $_LOCATION -type f| egrep -v '(txt$|rtf$)'` ; do
+	    ./ht2html.pl  $i  2> /dev/nul | \
+		    auto-utf8.pl | \
+		    sed -e 's/&lt;.*&gt;//g' -e 's/&nbsp;//g' > $i.txt
+            echo -n '.'
+	done
+    else
+	echo -e "\tDirectory: $_LOCATION, is not exist."
+	echo -e "\n\tI can't transfer data to TEXT format, Please check it."
+    fi
+    echo ""
+}
 function transfer_ht2txt() {
 		    #piconv -f big5 -t utf-8 | \
 
@@ -582,40 +600,56 @@ source MTR.sh
 source PCB.sh
 
 function ht2txt() {
-    setting_DGT
-    transfer_ht2txt
-    setting_TPG
-    transfer_ht2txt
-    setting_TCT
-    transfer_ht2txt3
-    setting_UDN
-    transfer_ht2txt3
-    setting_EET
-    transfer_ht2txt2
-    setting_EDG
-    transfer_ht2txt
-    setting_MTR
-    transfer_ht2txt
-    setting_PCB
-    transfer_ht2txt4
+    if [ "$__SITE". == "". ] ; then
+        setting_DGT ;    transfer_ht2txt
+	setting_TPG ;    transfer_ht2txt
+        setting_TCT ;    transfer_ht2txt3
+	setting_UDN ;    transfer_ht2txt3
+        setting_EET ;    transfer_ht2txt2
+	setting_EDG ;    transfer_ht2txt
+        setting_MTR ;    transfer_ht2txt
+	setting_PCB ;    transfer_ht2txt4
+    else
+	case "$__SITE" in
+	    DGT) setting_DGT ;        transfer_ht2txt ;;
+	    TPG) setting_TPG ;        transfer_ht2txt ;;
+	    TCT) setting_TCT ;        transfer_ht2txt3 ;;
+	    UDN) setting_UDN ;        transfer_ht2txt3 ;;
+	    EET) setting_EET ;        transfer_ht2txt2 ;;
+	    EDG) setting_EDG ;        transfer_ht2txt ;;
+	    IEK) echo "IEK no ht2txt" ;;
+	    MTR) setting_MTR ;        transfer_ht2txt ;;
+	    PCB) setting_PCB ;        transfer_ht2txt4 ;;
+	    xxx) echo "__SITE: $_SITE" ;;
+	    *) echo Error pasing type: $1. ; return 1 ;
+	esac
+    fi
 }
 function txt2rtf() {
-    setting_DGT
-    transfer_txt2rtf
-    setting_TPG
-    transfer_txt2rtf
-    setting_TCT
-    transfer_txt2rtf
-    setting_UDN
-    transfer_txt2rtf
-    setting_EET
-    transfer_txt2rtf
-    setting_EDG
-    transfer_txt2rtf
-    setting_MTR
-    transfer_txt2rtf
-    setting_PCB
-    transfer_txt2rtf
+    if [ "$__SITE". == "". ] ; then
+	setting_DGT ;        transfer_txt2rtf
+	setting_TPG ;        transfer_txt2rtf
+	setting_TCT ;        transfer_txt2rtf
+	setting_UDN ;        transfer_txt2rtf
+	setting_EET ;        transfer_txt2rtf
+	setting_EDG ;        transfer_txt2rtf
+	setting_MTR ;        transfer_txt2rtf
+	setting_PCB ;        transfer_txt2rtf
+    else
+	case "$__SITE" in
+	    DGT) setting_DGT ;        transfer_txt2rtf ;;
+	    TPG) setting_TPG ;        transfer_txt2rtf ;;
+	    TCT) setting_TCT ;        transfer_txt2rtf ;;
+	    UDN) setting_UDN ;        transfer_txt2rtf ;;
+	    EET) setting_EET ;        transfer_txt2rtf ;;
+	    EDG) setting_EDG ;        transfer_txt2rtf ;;
+	    IEK) echo "IEK no txt2rtf" ;;
+	    MTR) setting_MTR ;        transfer_txt2rtf ;;
+	    PCB) setting_PCB ;        transfer_txt2rtf ;;
+	    xxx) echo "__SITE: $_SITE" ;;
+	    *) echo Error pasing type: $1. ; return 1 ;
+	esac
+    fi
 }
 
 function tag_parsing_bydate() {
@@ -741,9 +775,7 @@ function tag_one_line() {
 
     SORT_F=`mktemp`
     SEQ_F=`mktemp`
-
-#    set +e
-
+#   set +e
     cat <&0 > $SORT_F
     #cat $SORT_F | gawk -F '|' '{print $1"|"$2"|"$3}' | gawk -F '[.,]' '{print $1}' | sort |uniq > $SEQ_F
     cat $SORT_F | gawk -F '|' '{print $1"|"$2"|"$3}' | sort |uniq > $SEQ_F
@@ -805,7 +837,9 @@ while true; do
     TITLE=`echo $article | gawk -F '|' '{print $4}'`
     TAGS=`echo $article | gawk -F '|' '{print $5}'`
 
-    #echo SITE: $SITE, TAGS: $TAGS 
+    location=""
+    #echo SITE: $SITE, TAGS: $TAGS
+    # "folder.tab" 
     exec 3<>$FOLDER_TAG
     while true; do
 	read line <&3
@@ -816,10 +850,18 @@ while true; do
 	TAR_SEQ=`echo $line | gawk -F '|' '{print $1}'`
         TAR_TAG='('`echo $line | gawk -F '|' '{print $7}'| \
 	    sed -e 's/ or /|/g' -e 's/"//g' -e 's/, /,/g' -e 's/ and /.*/g' | sed 's/^ //g' | sed 's/,/|/g'`')'
+	NOT_FIELD="`echo $line | gawk -F '|' '{print $8}'`"
+	NOT_TAG="(`echo $NOT_FIELD | sed -e 's/,/|/g' -e 's/ and /.*/g' -e 's/ /[|,]/g' -e 's/^/[|,]/g'`)"
+
 	if [ "$TAR_TAG". == "". ] ; then TAR_TAG='@@@###' ; fi
 	#echo $TAGS | grep "$TAR_TAG"
-	_logging $TAGS $TAR_TAG
-	STR="`echo $TAGS | egrep "$TAR_TAG"`"
+	#_logging "TITLE: $TITLE" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
+	if [ "$NOT_FIELD". == "". ] ; then
+	    STR="`echo $TAGS | egrep "$TAR_TAG"`"
+	else
+	    STR="`echo $TAGS | egrep "$TAR_TAG" | egrep -v "$NOT_TAG"`"
+	fi
+	
 	#echo line: $line
 
 	#echo TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
@@ -843,11 +885,15 @@ while true; do
 	    #echo location tag: \"$TAR_TAG\"
 	    #echo directory: $dir_1/$dir_2/$dir_3/$dir_4/$dir_5
 	    echo $article'|'$(echo $TAR_TAG|sed -e  's/|/,/g' -e 's/^(//g' -e 's/)$//g')'|'$location
+	    _logging "TARGETED TITLE: $TITLE, Location: $location" \
+		    "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
 	    break
 	fi
+	#_logging "TITLE: $TITLE, Location: $location" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
 	#echo "STR: " $STR
 	#echo TAR_SEQ: $TAR_SEQ, TAR_TAG: $TAR_TAG, line: $line
     done
+    #_logging "NOT TARGETED TITLE: $TITLE, Location: $location" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
     exec 3>&-
 
 done
@@ -871,6 +917,7 @@ function move_folder() {
 	read FLR <&0
         EOF_FLR=$?
 	if [ $EOF_FLR == 1 ] ; then break; fi
+	SITE_CODE="$(echo $FLR | gawk -F "|" '{print $1}')"
 	SITE=$(site_root_path "`echo $FLR | gawk -F "|" '{print $1}'`")
 	DATE=`echo $FLR | gawk -F "|" '{print $2}'`
         SEQ="$(expr $(echo $FLR | gawk -F "|" '{print $3}') + 0 )""$NEWS_EXTEN"
@@ -881,13 +928,14 @@ function move_folder() {
         LOCATION="$NEWS_ROOT_PATH/`echo $FLR | gawk -F "|" '{print $7}'`"
 	
         SRC="$SITE/$DATE/$SEQ"
-	DEST="$LOCATION/$TARGET"
+	DEST="$LOCATION/$SITE_CODE-$TARGET"
     
         #echo move $SRC to $DEST
 	RTF_FILE="$DEST$NEWS_EXTEN"
 	TOUCH_FILE="$DEST""　""KEY：$TAGS"
 	#TOUCH_FILE="`echo $TOUCH_FILE | sed 's/ //g'`"
 	mkdir -p "$LOCATION"
+	_logging "\$SRC: $SRC" "\$RTF_FILE: $RTF_FILE" "\$SITE: $SITE, \$SITE_CODE: $SITE_CODE"
         cp "$SRC" "$RTF_FILE"
 
 	dir_d=`dirname "$RTF_FILE"`
@@ -911,10 +959,9 @@ function move_folder() {
 }
 
 function tag_txt2rtf() {
-
-header="`perl rtf-header.pl| sed 's/\\\\chpgn//g' | tr '\n' ' ' | sed -e 's/^ //g' -e 's|\\\\|\\\\\\\\|g'`"
-orig_header='^{\\header\\pard\\qr\\plain\\f2\\fs17$'
-remove_string='.*\\chpgn\\par}$'
+    header="`perl rtf-header.pl| sed 's/\\\\chpgn//g' | tr '\n' ' ' | sed -e 's/^ //g' -e 's|\\\\|\\\\\\\\|g'`"
+    orig_header='^{\\header\\pard\\qr\\plain\\f2\\fs17$'
+    remove_string='.*\\chpgn\\par}$'
 
     while true ; do
 	read FLR <&0
@@ -949,13 +996,14 @@ __show_help() {
 	cat <<-_EOF
 		${_name} is a fetch web news program.
 
-		Usage: ${_name} [ [ -d <value> | --debug <value> ] [ < --SITE > ] | [--help|--version]
+		Usage: ${_name} [[ -d <value> | --debug <value>] < --SITE > | [--help|--version]
 		Tags usage: ${_name} --tag-seq [seq] | --tag-parsing-bydate < SITE > <date> <daynum> ] |
 		             [ [...parsing-parametrs] --tag-parsing < SITE >] | --tag-one-line 
 		Tab usage: ${_name}  --create-tag-tab | --create-folder-tab
 		folder tag: ${_name} --add-folder-tag | --move-folder [ fldr-tag-report ]
+		transfer : ${_name} --site <SITE> [ --ht2txt ] [ --txt2rtf ]
 
-		    -d, --debug <value> : setup debug value; 
+		    -d, --debug <value> : setup debug value;  --site <SITE> : define \$__SITE value
 		    --tag-seq [seq]: parse specific seq no from tags table(types.tab). seq(ref)
 		    --tag-parsing:	    ;	--tag-parsing-bydate: 
 		    --tag-one-line: after --tag-paring* you can format duplicated title to one line.
@@ -979,7 +1027,7 @@ __show_help() {
 		        cat res.1 res.2 | ${_name} --tag-one-line > 20090206.tag-report ;# tag-report
 		        cat 20090206.tag-report | ${_name} --add-folder-tag > 20090206.fldr-report #fldr-report
 		        cat 20090206.fldr-report | ${_name} --move-folder 
-		        ${_name} --txt2rtf | --ht2txt
+		        ${_name} --txt2rtf | --ht2txt ; or:\$  ${_name} --site DGT --txt2rt --ht2txt
 		        cat 20090206.tag-report | ${_name} --tag-txt2rtf
 		_EOF
 }
@@ -1006,7 +1054,7 @@ fi
 source $WNS_CONFIG
 
 # check options...
-COMMON_OP="help,version,debug:"
+COMMON_OP="help,version,debug:,site:"
 SITE_OP="DGT,TPG,TCT,UDN,EET,EDG,IEK,MTR,PCB"
 FETCH_OP="txt2rtf,ht2txt"
 TAG_OP="tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,tag-txt2rtf"
@@ -1018,6 +1066,8 @@ OPT=`getopt -o Dd:,hHvV --long $ALL_OP -- "$@"`
 #	--long create-tag-tab,tag-seq:,tag-parsing:,tag-parsing-bydate:,tag-one-line,DGT,dgt,TPG,tpg,help,version,debug: -- "$@"`
 
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+
+__SITE=""
 
 #echo OPT: $OPT
 eval set -- "$OPT"
@@ -1051,6 +1101,7 @@ while true ; do
 	    esac 
 	    #echo $1 $2
 	    ;;
+	--site) __SITE="$2"; shift ;;
 	--tag-one-line)	    tag_one_line ;    shift ;;
 	--tag-parsing-bydate) tag_parsing_bydate $2 $3 $4; shift 2 ;;
 

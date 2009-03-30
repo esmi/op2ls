@@ -147,7 +147,7 @@ function MTR() {
     fetch_news_list_MTR
 
     _logging 'PHASE V: Transfer HTML to TEXT'
-    transfer_ht2txt
+    transfer_ht2txt0
     _logging 'PHASE V: Transfer HTML to RTF'
     transfer_txt2rtf
 }
