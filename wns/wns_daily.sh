@@ -88,10 +88,7 @@ function __parse() {
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "TCT $TODAY 1" |tee $REPORT/$TODAY-parse.TCT
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "UDN $TODAY 1" |tee $REPORT/$TODAY-parse.UDN
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EET $TODAY 1" |tee $REPORT/$TODAY-parse.EET
-    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EDG $TODAY 1" |tee $REPORT/$TODAY-parse.EDG.orig
-    cat $REPORT/$TODAY-parse.EDG.orig | \
-	     gawk -F '|' '{print $1"|"$2"|"$3"|"$4"|"$5",English|"$6"|"$7"|"$8"|"$9}' | \
-	     tee $REPORT/$TODAY-parse.EDG
+    wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "EDG $TODAY 1" |tee $REPORT/$TODAY-parse.EDG
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "MTR $TODAY 1" |tee $REPORT/$TODAY-parse.MTR
     wns.sh --tag-seq -- | wns.sh --tag-parsing-bydate "PCB $TODAY 1" |tee $REPORT/$TODAY-parse.PCB
 }
@@ -154,30 +151,72 @@ function __tar2nas {
     cmd /c "xcopy $src_d $dst_d /A /E /H"
 }
 
+#function __tar2bi {
+
+#    local base="../WNS_RTF/產業新聞"
+#    #TODAY='20090307'
+#    local year=`expr substr $TODAY 1 4`
+#    local month=$(expr `expr substr $TODAY 5 2` + 0 )
+#    local day=$(expr `expr substr $TODAY 7 2` + 0 )
+#    local day_d="$month""月""$day""日"
+#    local today_d="$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+#    local source="$base"/"$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+#    set +e
+#    src_d="`cygpath -w $source`"
+#    dst_d=`cygpath -w "$NAS_BASE/WNS_RTF-200902/產業新聞/$today_d" `
+#    echo $source
+#    echo $src_d
+#    echo $dst_d
+#    rm -rf "$dst_d"
+#    mkdir -p "$dst_d"
+#    echo cmd /c "xcopy $src_d $dst_d /A /E /H"
+#    cmd /c "xcopy $src_d $dst_d /A /E /H"
+#    set -e
+#}
+
 function __tar2bi {
 
-    local base="../WNS_RTF/產業新聞"
     #TODAY='20090307'
     local year=`expr substr $TODAY 1 4`
     local month=$(expr `expr substr $TODAY 5 2` + 0 )
+    local emonth=$(expr substr $TODAY 5 2 )
     local day=$(expr `expr substr $TODAY 7 2` + 0 )
-    local day_d="$month""月""$day""日"
-    local today_d="$year""年產業新聞報"/"$year""年"$month"月"/$day_d
-    local source="$base"/"$year""年產業新聞報"/"$year""年"$month"月"/$day_d
+    local eday="$(expr substr $TODAY 7 2)"
+    echo eday: $eday \$1: $1
+
+    if [ "$1". == "ENG". ] ; then
+	news_type="Digitimes-英文報"
+	root_d="$year"
+	month_d="`date "+%Y %B"`"
+	day_d="$emonth$eday"
+	echo day_d: "$day_d" eday: $eday
+    else
+	news_type="產業新聞"
+	root_d="$year""年產業新聞報"
+	month_d="$year""年"$month"月" 
+	day_d="$month""月""$day""日"
+    fi
+    echo day_d: $day_d
+
+    local base="../WNS_RTF/$news_type"
+    local today_d="$root_d/$month_d/$day_d"
+    local source="$base/$root_d/$month_d/$day_d"
+    local WNS_RTF='WNS_RTF-200902'
+    #local WNS_RTF='WNS_RTF-test'
+    
     set +e
-    src_d="`cygpath -w $source`"
-    dst_d=`cygpath -w "$NAS_BASE/WNS_RTF-200902/產業新聞/$today_d" `
-    echo $source
-    echo $src_d
-    echo $dst_d
+    src_d="$(cygpath -w "$source")"
+    dst_d="$(cygpath -w "$NAS_BASE/$WNS_RTF/$news_type/$today_d")"
+    echo  "source=$source"; echo  src_d="$src_d"; echo "dst_d=$dst_d"
     rm -rf "$dst_d"
     mkdir -p "$dst_d"
-    echo cmd /c "xcopy $src_d $dst_d /A /E /H"
-    cmd /c "xcopy $src_d $dst_d /A /E /H"
+    echo xcopy "$src_d" "$dst_d" /A /E /H /Y /I /C
+    xcopy "$src_d" "$dst_d" /A /E /H /Y /I /C
     set -e
 }
 
 __naschk_tar2bi() {
+
     #NAS_HOST="\\\\host-for-not-available"
     local fail=0
     local try_times=10
@@ -185,7 +224,8 @@ __naschk_tar2bi() {
     while true; do  
         if [ -e $NAS_HOST ] ; then 
 	    __nas_connect
-	    __tar2bi
+	    __tar2bi ""
+	    __tar2bi "ENG"
 	    break 
 	else 
 	    echo $NAS_HOST is not available.....'('$fail')' times
@@ -259,6 +299,7 @@ function __today() {
     echo `basename $0`: $daily_start - $daily_end , $fetch_start - $fetch_end >> $LOG/`basename $0`.log
 }
 function __xls2tab() {
+# cat types.tab2 | sed -e 's/\[-\\s\]\*/[[:blank:]].*/g' -e 's/\[-\\s\]\/[[:blank:]]/g'
 
     path='//kh-nas/社群資料區/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
     table='BI新聞分類機制.xls'
@@ -280,15 +321,20 @@ function __xls2tab() {
     echo "       $XLSTBL"
     echo "    to $TODAY_TAB"
 
+    engtitle='^[[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:graph:]]$'
     if [ -e "$XLSTBL" ] ; then
 	cp "$XLSTBL" $TODAY_TAB
         cp $TODAY_TAB $DEFAULT_TAB
 
 	echo "RULES TABLE has been copy to $DEFAULT_TAB."
         echo "Use $DEFAULT_TAB: \"tagging\" sheet to create $RULES_TAB"
+	#egrep -v '(^seq|^\(0|^\"seq|title全為英文|^.*OR.*NOT|^Name.*tagging$)' | \
+# (cat ../REPORT/*-parse.EDG)|  gawk -F '|' '{print $4}' | egrep  '^[[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:graph:]]$'
+
+english_title='^[[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:graph:]]$'
 	perl ./xls2rules.pl $DEFAULT_TAB 2>/dev/null | \
-	    egrep -v '(^seq|^\(0|^\"seq|title全為英文|^.*OR.*NOT|^Name.*tagging$)' | \
-	    sed -e 's/, /,/g' -e 's/|$//g' -e 's/,,/,/g' > $RULES_TAB
+	    egrep -v '(^seq|^\(0|^\"seq|^.*OR.*NOT|^Name.*tagging$)' | \
+	    sed -e 's/, /,/g' -e 's/|$//g' -e 's/,,/,/g' -e "s/\[title全為英文\]/$engtitle/g" > $RULES_TAB
         echo "Use $DEFAULT_TAB: \"main\" sheet to create $RULES_TAB"
         perl ./xls2folder.pl $DEFAULT_TAB 2> /dev/null | \
 	    egrep -v "(^Name:.*|^sequence|^\(0.*)" | grep -v '^|||||' > $FOLDER_TAB
@@ -381,7 +427,7 @@ __show_help() {
 }
 
 
-#__man
+#__main
 ABORT_OP="disable-abort,enable-abort"
 COMMON_OP="today,nofetch,help,xls2tab,deploy-data,tar2bi,tar2nas,check:"
 SCHEDULE_OP="schedule-task,schedule-nofetch,schedule-env,nas-connect,nas-disconnect,naschk-tar2bi"

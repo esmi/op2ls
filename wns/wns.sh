@@ -717,6 +717,8 @@ function tag_parsing() {
 
 function tag_parsing_file() {
 #prototype:    tag_parsing_file $input_SEQ_F $PARSED_FILE $PARSE_DATE $SITE_NAME
+# (cat ../REPORT/*-parse.EDG)|  gawk -F '|' '{print $4}' | egrep  '^[[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:blank:]][[:alnum:]].*[[:graph:]]$'
+
     local PARSE_SEQ_F=$1
     local PARSED_F=$2
     local PARSE_DATE=$3
@@ -744,13 +746,17 @@ function tag_parsing_file() {
 
 	if [ "$S_NOT". == '()'. ] ; then S_NOT='(@@%%&&%%@@$$$$)' ; fi
 
-        echo TAG: $TAG, S_KEY: $S_KEY, NOT: $NOT >&2
-        echo SEQ: $SEQ, PARSE_DATE: $PARSE_DATE, S_NOT: \"$S_NOT\" >&2
-	    echo "s/$/|$TAG||$SEQ|$PARSE_DATE|$NOT/g" >&2 
-	    echo "s/^/$SITE_NAME|$PARSE_DATE|/g" >&2
+        _logging "TAG: $TAG" "S_KEY: $S_KEY" "NOT: $NOT"
+        _logging "SEQ: $SEQ, PARSE_DATE: $PARSE_DATE, S_NOT: \"$S_NOT\"" \
+	         "s/$/|$TAG||$SEQ|$PARSE_DATE|$NOT/g"  \
+	         "s/^/$SITE_NAME|$PARSE_DATE|/g" 
 
-        cat "$PARSED_F" | egrep -i "$S_KEY" | \
-	    egrep -v "$S_NOT" | \
+	#RE_TYPE="-E"
+	RE_TYPE="-P"
+        #cat "$PARSED_F" | egrep -i "$S_KEY" | \
+	#    egrep -v "$S_NOT" | \
+        cat "$PARSED_F" | grep "$RE_TYPE" -i "$S_KEY" | \
+	    grep "$RE_TYPE" -v "$S_NOT" | \
 	    sed -e "s/$/|$TAG|$(echo -n $KEY| \
 				    sed -e 's/\\/\\\\/g' -e 's/\//\\\//g')|$SEQ|$PARSE_DATE|$( \
 				echo $NOT| sed -e 's/\\/\\\\/g' -e 's/\//\\\//g')/g" \
@@ -809,107 +815,106 @@ function tag_one_line() {
 
 function add_folder_tag () {
 
-FOLDER_TAG_TABLE=folder.tab
+    FOLDER_TAG_TABLE=folder.tab
 
-#set +e
-if [ $1. == "". ] ; then
-    ARTICLE_TAG_REPORT=`mktemp`
-    cat <&0 > $ARTICLE_TAG_REPORT
-else
-    ARTICLE_TAG_REPORT=$1
-fi
+    #set +e
+    if [ $1. == "". ] ; then
+	ARTICLE_TAG_REPORT=`mktemp`
+        cat <&0 > $ARTICLE_TAG_REPORT
+    else
+	ARTICLE_TAG_REPORT=$1
+    fi
 
-FOLDER_TAG=`mktemp`
+    FOLDER_TAG=`mktemp`
 
-cat $FOLDER_TAG_TABLE | egrep -v ^0 |  sort > $FOLDER_TAG
-#cat folder.tab | egrep  ^7 |  sort > $FOLDER_TAG
+    cat $FOLDER_TAG_TABLE | egrep -v ^0 |  sort > $FOLDER_TAG
+    #cat folder.tab | egrep  ^7 |  sort > $FOLDER_TAG
 
-exec 4<>$ARTICLE_TAG_REPORT
-while true; do
-
-    read article <&4
-    ART_EOF=$?
-    if [ $ART_EOF == 1 ] ; then break ; fi
-    
-    SITE=`echo $article | gawk -F '|' '{print $1}'`
-    DATE=`echo $article | gawk -F '|' '{print $2}'`
-    SEQ=`echo $article | gawk -F '|' '{print $3}'`
-    TITLE=`echo $article | gawk -F '|' '{print $4}'`
-    TAGS=`echo $article | gawk -F '|' '{print $5}'`
-
-    location=""
-    #echo SITE: $SITE, TAGS: $TAGS
-    # "folder.tab" 
-    exec 3<>$FOLDER_TAG
+    exec 4<>$ARTICLE_TAG_REPORT
     while true; do
-	read line <&3
-	EOF=$?
 
-	if [ $EOF == 1 ] ; then break ; fi
+	read article <&4
+        ART_EOF=$?
+	if [ $ART_EOF == 1 ] ; then break ; fi
+    
+        SITE=`echo $article | gawk -F '|' '{print $1}'`
+        DATE=`echo $article | gawk -F '|' '{print $2}'`
+	SEQ=`echo $article | gawk -F '|' '{print $3}'`
+	TITLE=`echo $article | gawk -F '|' '{print $4}'`
+        TAGS=`echo $article | gawk -F '|' '{print $5}'`
 
-	TAR_SEQ=`echo $line | gawk -F '|' '{print $1}'`
-        TAR_TAG='('`echo $line | gawk -F '|' '{print $7}'| \
-	    sed -e 's/ or /|/g' -e 's/"//g' -e 's/, /,/g' -e 's/ and /.*/g' | sed 's/^ //g' | sed 's/,/|/g'`')'
-	NOT_FIELD="`echo $line | gawk -F '|' '{print $8}'`"
-	NOT_TAG="(`echo $NOT_FIELD | sed -e 's/,/|/g' -e 's/ and /.*/g' -e 's/ /[|,]/g' -e 's/^/[|,]/g'`)"
+	location=""
+        #echo SITE: $SITE, TAGS: $TAGS
+	# "folder.tab" 
+        exec 3<>$FOLDER_TAG
+	while true; do
+	    read line <&3
+	    EOF=$?
 
-	if [ "$TAR_TAG". == "". ] ; then TAR_TAG='@@@###' ; fi
-	#echo $TAGS | grep "$TAR_TAG"
-	#_logging "TITLE: $TITLE" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
-	if [ "$NOT_FIELD". == "". ] ; then
-	    STR="`echo $TAGS | egrep "$TAR_TAG"`"
-	else
-	    STR="`echo $TAGS | egrep "$TAR_TAG" | egrep -v "$NOT_TAG"`"
-	fi
+	    if [ $EOF == 1 ] ; then break ; fi
+
+	    TAR_SEQ=`echo $line | gawk -F '|' '{print $1}'`
+	    TAR_TAG='('`echo $line | gawk -F '|' '{print $7}'| \
+		    sed -e 's/ or /|/g' -e 's/"//g' -e 's/, /,/g' -e 's/ and /.*/g' |\
+		    sed 's/^ //g' | sed 's/,/|/g'`')'
+	    NOT_FIELD="`echo $line | gawk -F '|' '{print $8}'`"
+	    NOT_TAG="(`echo $NOT_FIELD | \
+		    sed -e 's/,/|/g' -e 's/ and /.*/g' -e 's/ /[|,]/g' -e 's/^/[|,]/g'`)"
+
+	    if [ "$TAR_TAG". == "". ] ; then TAR_TAG='@@@###' ; fi
+	    #echo $TAGS | grep "$TAR_TAG"
+	    #_logging "TITLE: $TITLE" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
+	    if [ "$NOT_FIELD". == "". ] ; then
+	        STR="`echo $TAGS | egrep "$TAR_TAG"`"
+	    else
+	        STR="`echo $TAGS | egrep "$TAR_TAG" | egrep -v "$NOT_TAG"`"
+	    fi
 	
-	#echo line: $line
+	    #echo TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
 
-	#echo TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
+	    if [ "$STR". != "". ] ; then
+	        dir_1=`echo $line | gawk -F '|' '{print $2}'| sed -e 's/ //g'`
+		if [ "$dir_1". == "Digitimes-英文報". ] ; then
+		    dir_2="`date +%Y`"
+		    dir_3="`date '+%Y %B'`"
+		    dir_4="`date '+%m%d'`"
+		else
+		    dir_2=`expr substr $DATE 1 4``echo $line | gawk -F '|' '{print $3}'| \
+			sed -e 's/ //g' -e 's/[0-9]//g'`
+		    dir_3="$(expr substr $DATE 1 4)"年"$(expr `expr substr $DATE 5 2` + 0)"月
+		    dir_4="$(expr `expr substr $DATE 5 2` + 0)"月"$(expr `expr substr $DATE 7 8` + 0 )"日
+		fi
+	        dir_5=`echo $line | gawk -F '|' '{print $6}' | sed -e 's/ //g'`
+	        location="$dir_1/$dir_2/$dir_3/$dir_4/$dir_5"
 
-	if [ "$STR". != "". ] ; then
-	    dir_1=`echo $line | gawk -F '|' '{print $2}'| sed -e 's/ //g'`
-	    dir_2=`expr substr $DATE 1 4``echo $line | gawk -F '|' '{print $3}'| \
-		     sed -e 's/ //g' -e 's/[0-9]//g'`
-	    dir_3="$(expr substr $DATE 1 4)"年"$(expr `expr substr $DATE 5 2` + 0)"月
+	        #echo ---- TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
+	        #echo artical title: $TITLE
+	        #echo artical tags: $TAGS
+	        #echo location tag: \"$TAR_TAG\"
+	        #echo directory: $dir_1/$dir_2/$dir_3/$dir_4/$dir_5
+	        echo $article'|'$(echo $TAR_TAG|sed -e  's/|/,/g' -e 's/^(//g' -e 's/)$//g')'|'$location
+	        _logging "TARGETED TITLE: $TITLE, Location: $location" \
+			    "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
+	        break
+	    fi
+	done
+	exec 3>&-
 
-	    #dir_3=`echo $line | gawk -F '|' '{print $4}'`
-	    #idir_4=`echo $line | gawk -F '|' '{print $5}'`
-
-	    dir_4="$(expr `expr substr $DATE 5 2` + 0)"月"$(expr `expr substr $DATE 7 8` + 0 )"日
-	    dir_5=`echo $line | gawk -F '|' '{print $6}' | sed -e 's/ //g'`
-	    location="$dir_1/$dir_2/$dir_3/$dir_4/$dir_5"
-
-	    #echo ---- TAGS: $TAGS, TAR_TAG: \"$TAR_TAG\", STR: $STR
-	    #echo artical title: $TITLE
-	    #echo artical tags: $TAGS
-	    #echo location tag: \"$TAR_TAG\"
-	    #echo directory: $dir_1/$dir_2/$dir_3/$dir_4/$dir_5
-	    echo $article'|'$(echo $TAR_TAG|sed -e  's/|/,/g' -e 's/^(//g' -e 's/)$//g')'|'$location
-	    _logging "TARGETED TITLE: $TITLE, Location: $location" \
-		    "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
-	    break
-	fi
-	#_logging "TITLE: $TITLE, Location: $location" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
-	#echo "STR: " $STR
-	#echo TAR_SEQ: $TAR_SEQ, TAR_TAG: $TAR_TAG, line: $line
     done
-    #_logging "NOT TARGETED TITLE: $TITLE, Location: $location" "TAG: $TAGS" "TAR_TAG: $TAR_TAG, NOT_TAG: $NOT_TAG"
-    exec 3>&-
 
-done
+    exec 4>&-
 
-exec 4>&-
-
-rm -f $FOLDER_TAG
-if [ $1. == "". ] ; then
-    rm -f $ARTICLE_TAG_REPORT
-fi
-#set -e
+    rm -f $FOLDER_TAG
+    if [ $1. == "". ] ; then
+	rm -f $ARTICLE_TAG_REPORT
+    fi
+    #set -e
 }
 
 function move_folder() {
 
     #NEWS_ROOT_PATH=./WNS_RTF # define in wns.cfg.
+    local TAG_TODAY="(`date +%Y%m%d`)"
     NEWS_EXTEN=".rtf"
     current_dir=`pwd`
     while true ; do
@@ -928,7 +933,7 @@ function move_folder() {
         LOCATION="$NEWS_ROOT_PATH/`echo $FLR | gawk -F "|" '{print $7}'`"
 	
         SRC="$SITE/$DATE/$SEQ"
-	DEST="$LOCATION/$SITE_CODE-$TARGET"
+	DEST="$LOCATION/$SITE_CODE-$TARGET$TAG_TODAY"
     
         #echo move $SRC to $DEST
 	RTF_FILE="$DEST$NEWS_EXTEN"
