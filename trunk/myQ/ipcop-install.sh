@@ -1,6 +1,6 @@
 QEMU_D=./qemu-20080810-windows
 ISO_FILE=ipcop-1.4.15-install-cd.i386.iso
-IPCOP_INST_IMG=ipcop_run.dsk
+IPCOP_INST_IMG=ipcop.dsk
 TAP_IF=OVPN
 
 $QEMU_D/qemu -L $QEMU_D -boot d \

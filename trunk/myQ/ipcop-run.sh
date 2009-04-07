@@ -73,7 +73,7 @@ else
 		-net socket,vlan=1,listen=localhost:1234 \
 		-net socket,vlan=1,mcast=230.0.0.1:1234 \
         -net nic,macaddr=$MAC0 -net tap,ifname=$TAP_IF \
-        -hda "$Q_IMAGE"
+        -hda "$Q_IMAGE" 
 
         #-net nic,vlan=1,macaddr=$MAC1 \
 		#-net socket,vlan=1,mcast=230.0.0.1:1234 \
