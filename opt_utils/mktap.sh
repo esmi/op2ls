@@ -7,7 +7,8 @@ DEV_TYPE=tap0901
 function help() {
     cat	<<-EOF
 	This script create or remove TAP device,
-	    It require openssh tap-win32 intalld.
+	    It require openssh tap-win32 intalld, 
+	    and must run as Administrator.
 
 	Usage: $0 [ create [n | TAPNAME ] | remove | help ]
 	    create: create [n] TAP device, and device name is TAPx.

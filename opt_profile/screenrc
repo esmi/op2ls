@@ -22,9 +22,10 @@ bind } history
 
 term xterm-color
 
-chdir /usr/src/opt/wl-news
-screen -t Dig_V /bin/bash --rcfile ~/.profile
-screen -t Dig_R /bin/bash --rcfile ~/.profile
+chdir /usr/src/opt/wns/RUN/script
+screen -t WNS1 /bin/bash --rcfile ~/.profile
+chdir /usr/src/opt/wns/RUN/script
+screen -t Wlnews /bin/bash --rcfile ~/.profile
 
 chdir /usr/src/qemu/ipcop
 screen -t QEMU /bin/bash  --rcfile ~/.profile
@@ -38,8 +39,10 @@ screen -t OPT /bin/bash --rcfile ~/.profile
 chdir /usr/src/work
 screen -t WORK /bin/bash --rcfile ~/.profile
 
-
 chdir $HOME
 screen cpan
 screen ydict
+
+chdir /usr/src/opt/wgd
+screen -t WGD /bin/bash --rcfile ~/.profile
 
