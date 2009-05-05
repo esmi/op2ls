@@ -21,8 +21,8 @@ if [ ! -d $REPORT ] ; then mkdir $REPORT ; fi
 #PS: KH-NAS every morning, reboot time: am7:40 - am8:10
 #
 #NAS_HOST=
-NAS_SHARE="\\\\kh-nas\\社群資料區"
-NAS_BASE='//kh-nas/社群資料區/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
+NAS_SHARE="\\\\kh-nas\\Project"
+NAS_BASE='//kh-nas/Project/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
 #NAS_PWD=_
 #NAS_USR=
 
@@ -72,7 +72,6 @@ function fetch_news() {
     #wns.sh --debug 300 --UDN
     #wns.sh --debug 300 --EET
     #wns.sh --debug 300 --EDG
-
 }
 
 function __fetch() {
@@ -262,9 +261,11 @@ function __deploy_data {
     cp -r "$src_d" "$dst_base/$month_d"
     echo cp -r "$src_d" "$dst_base/$month_d"
 }
+
 function __nofetch() {
     __today "nofetch"
 }
+
 function __today() {
     daily_start=`date "+%x %X"`
 
@@ -298,10 +299,12 @@ function __today() {
     daily_end=`date "+%x %X"`
     echo `basename $0`: $daily_start - $daily_end , $fetch_start - $fetch_end >> $LOG/`basename $0`.log
 }
+
 function __xls2tab() {
 # cat types.tab2 | sed -e 's/\[-\\s\]\*/[[:blank:]].*/g' -e 's/\[-\\s\]\/[[:blank:]]/g'
 
-    path='//kh-nas/社群資料區/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
+    #path='//kh-nas/社群資料區/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
+    path='//kh-nas/Project/新產品開發專案管理/新產品開發專案管理/BI_經企/以程式處理BI資訊'
     table='BI新聞分類機制.xls'
     XLSTBL="$path/$table"
     #XLSTBL="`echo $XLSTBL | piconv -f utf-8 -t big5`"
@@ -354,12 +357,14 @@ __schedule_nofetch() {
     __nofetch 2>../log/$TODAY-today-nof.err.log 1>../log/$TODAY-today-nof.log
     __tar2bi 2>../log/$TODAY-tar2bi-nof.err.log 1>../log/$TODAY-tar2bi-nof.log
 }
+
 __schedule_task() {
     echo "`date`" >../log/$TODAY-task.start
     __today 2>../log/$TODAY-today.err.log 1>../log/$TODAY-today.log
     __naschk_tar2bi 2>../log/$TODAY-tar2bi.err.log 1>../log/$TODAY-tar2bi.log
     echo "`date`" >../log/$TODAY-task.stop
 }
+
 __schedule_env() {
 
     TIME="$(date +%H%M%S)" 
