@@ -756,7 +756,7 @@ function tag_parsing_file() {
         #cat "$PARSED_F" | egrep -i "$S_KEY" | \
 	#    egrep -v "$S_NOT" | \
         cat "$PARSED_F" | grep "$RE_TYPE" -i "$S_KEY" | \
-	    grep "$RE_TYPE" -v "$S_NOT" | \
+	    grep "$RE_TYPE" "$RE_TYPE" -iv "$S_NOT" | \
 	    sed -e "s/$/|$TAG|$(echo -n $KEY| \
 				    sed -e 's/\\/\\\\/g' -e 's/\//\\\//g')|$SEQ|$PARSE_DATE|$( \
 				echo $NOT| sed -e 's/\\/\\\\/g' -e 's/\//\\\//g')/g" \
