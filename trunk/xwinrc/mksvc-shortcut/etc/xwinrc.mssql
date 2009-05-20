@@ -1,0 +1,20 @@
+menu mssql {
+	"Start MSSQL"		 exec "cygstart $HOME/opt/etc/service.d/MSSql-svc-start.lnk"
+	"Start Report Server"	 exec "cygstart $HOME/opt/etc/service.d/ReportSrv-svc-start.lnk"
+	"Start SQL Browser"	 exec "cygstart $HOME/opt/etc/service.d/SQLBrowser-svc-start.lnk"
+	separator
+	"Stop MSSQL"		 exec "cygstart $HOME/opt/etc/service.d/MSSql-svc-stop.lnk"
+	"Stop Report Server"	 exec "cygstart $HOME/opt/etc/service.d/ReportSrv-svc-stop.lnk"
+	"Stop SQL Browser"	 exec "cygstart $HOME/opt/etc/service.d/SQLBrowser-svc-stop.lnk"
+}
+menu root {
+	"Reload .XWinrc"    RELOAD
+	Separator
+	"MSSqlExpress service control" menu mssql
+	Separator
+}
+RootMenu root
+
+DEBUG "Done parsing the configuration file..."
+
+
