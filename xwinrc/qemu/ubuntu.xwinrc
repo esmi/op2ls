@@ -1,0 +1,1 @@
+"UBUNTU" exec "cygstart /usr/src/qemu/ubuntu/UBUNTU.lnk"
