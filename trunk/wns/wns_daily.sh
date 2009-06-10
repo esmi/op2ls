@@ -207,7 +207,9 @@ function __tar2bi {
     src_d="$(cygpath -w "$source")"
     dst_d="$(cygpath -w "$NAS_BASE/$WNS_RTF/$news_type/$today_d")"
     echo  "source=$source"; echo  src_d="$src_d"; echo "dst_d=$dst_d"
-    rm -rf "$dst_d"
+    echo  "rm directory: $dst_d" 1>&2
+    #rm -rf "$dst_d"
+    echo  "mkdir directory: $dst_d" 1>&2  
     mkdir -p "$dst_d"
     echo xcopy "$src_d" "$dst_d" /A /E /H /Y /I /C
     xcopy "$src_d" "$dst_d" /A /E /H /Y /I /C
@@ -216,22 +218,29 @@ function __tar2bi {
 
 __naschk_tar2bi() {
 
-    #NAS_HOST="\\\\host-for-not-available"
+    #NAS_HOST="\\\\host-for-not-available-this-host-is-for-debug"
     local fail=0
     local try_times=10
-    local sleep_time=5m
+    local sleep_time=6m
     while true; do  
         if [ -e $NAS_HOST ] ; then 
 	    __nas_connect
+	    if [ $fail -gt 0 ] ; then
+		echo `date +%x-%X` Beause NAS_HOST: $NAS_HOST has been not available. 
+		echo `date +%x-%X` for available, Program enter sleepping mode, time: $sleep_time
+		sleep $sleep_time
+	    fi
 	    __tar2bi ""
 	    __tar2bi "ENG"
 	    break 
 	else 
-	    echo $NAS_HOST is not available.....'('$fail')' times
+	    echo `date +%x-%X` $NAS_HOST is not available.....'('fail times: $fail')'.
+	    echo `date +%x-%X` Enter sleep mode, sleep time: $sleep_time 
 	    sleep $sleep_time
 	    fail=$(expr $fail + 1)
+
 	    if [ $fail -gt $try_times ] ; then
-		echo  Fail: $NAS_HOST is not available after check 10 times.
+		echo  `date +%x-%X` Fail: $NAS_HOST is not available after check 10 times.
 		break
 	    fi
 	fi
