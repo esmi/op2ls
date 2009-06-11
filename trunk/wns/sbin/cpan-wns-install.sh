@@ -1,0 +1,13 @@
+#cpan -i Encode;
+cpan -i File::Slurp;
+#cpan -i FileHandle;
+cpan -i HTML::ExtractContent;
+cpan -i HTML::FormatRTF;
+cpan -i HTML::TagFilter;
+#cpan -i HTTP::Date;
+#cpan -i LWP::UserAgent;
+cpan -i RTF::Writer;
+cpan -i Spreadsheet::ParseExcel;
+cpan -i Text::Trim;
+cpan -i XML::RSS::Parser;
+#cpan -i strict;

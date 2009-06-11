@@ -381,6 +381,12 @@ __schedule_env() {
     net use | piconv -f big5 -t utf-8 >> ../log/$TODAY-$TIME--schedule-env.log
 }
 
+__schedule_cmd() {
+
+    echo schedule command:
+    echo d:\\wns\\cygwin\\bin\\bash.exe -c \"PATH=./:/usr/bin:'$PATH;$HOME'/wns/script/wns_daily.sh  --nas-connect --schedule-task --nas-disconnect\"
+}
+
 __nas_connect() {
     
     echo net use "$NAS_SHARE"  "$NAS_PWD" /USER:"$NAS_USR"
@@ -429,7 +435,7 @@ __show_help() {
 
 		        --schedule-task: run schedule on win32 taskmanager.
 		        --schedule-nofetch: same as --schedule-task but nofetch web site news.
-
+			--schedule-cmd: show schedule command.
 		        --schedule-env: test schedule environment to ../log/TODAY-TIME-schedlue-test.log
 		        --nas-connect, --nas-disconnect: connect/disconnect NAS connect.
 		        --naschk-tar2bi: check nas, if it unavailable, sleep, recheck, if available re-connect.
@@ -444,7 +450,7 @@ __show_help() {
 #__main
 ABORT_OP="disable-abort,enable-abort"
 COMMON_OP="today,nofetch,help,xls2tab,deploy-data,tar2bi,tar2nas,check:"
-SCHEDULE_OP="schedule-task,schedule-nofetch,schedule-env,nas-connect,nas-disconnect,naschk-tar2bi"
+SCHEDULE_OP="schedule-task,schedule-nofetch,schedule-env,schedule-cmd,nas-connect,nas-disconnect,naschk-tar2bi"
 GEN_OP="fetch,parse,tagging,rtf,tag-folder,move,copy-report"
 ALL_OP="$GEN_OP,$COMMON_OP,$ABORT_OP,$SCHEDULE_OP"
 OPT=`getopt -o "" --longoptions=$ALL_OP -- "$@"`
@@ -476,6 +482,7 @@ while true ; do
 	--schedule-task)	__schedule_task; shift ;;
 	--schedule-nofetch)	__schedule_nofetch; shift ;;
 	--schedule-env)	__schedule_env; shift ;;
+	--schedule-cmd)	__schedule_cmd; shift ;;
 	--nas-connect)  __nas_connect; shift;;
 	--nas-disconnect) __nas_disconnect; shift;;
 	--naschk-tar2bi)	__naschk_tar2bi; break ;;
