@@ -30,7 +30,7 @@ template_new_layout() {
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
         FieldType=$(echo $fd | gawk -F "/" '{print $2}')
 	case $FieldType in
-	    text) templatefield_text | sed "s/##FieldName_#/$(echo $FieldName)/g" ;;
+	    text) field_text_modify_layout | sed "s/##FieldName_#/$(echo $FieldName)/g" ;;
 	    date) templatefield_date | sed "s/##FieldName_#/$(echo $FieldName)/g" ;;
 	    *) ;;
 	esac
