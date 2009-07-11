@@ -2,11 +2,21 @@
 
 #FIELDS="Description/text Abbrevation/text StockID/text Enter_four/text ERP_StockId/text"
 
+#PRG_TYPE=MAIN/DBL_RELATE/DBL_ATTACH/DBL_IMPORT
+PRG_TYPE=MAIN
+PRG_TYPE=DBL
+
+IS_ATTACH=TRUE
+IS_IMPORT=TRUE
+
+KEY_TYPE=MULTY_KEY
+KEY_MULTY="DeptId,PeriodId,WhrsId"
 TEMPLATE=Whrs
 TABLE=Whrs
 PKEY=WhrsId
 LOCATION=Whrs
 
+RELATED_TABLE=MsgCustoms
 
 PFIELD="$PKEY/text/nvarchar/5/Not/whrsId/信息量倉編碼/信息量倉編碼"
 FIELDS="Description/text/nvarchar/20//dscription/說明/說明 \
@@ -42,12 +52,15 @@ cat "$PATTERN"/Template.asp | \
         > $_output/"$TEMPLATE".asp
 }
 _template_modify() {
-cat "$PATTERN"/Template_Modify.asp | \
-    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-	-e "s/##Location_#/$(echo $LOCATION)/g" \
-	>  $_output/"$TEMPLATE"_Modify.asp
+#cat "$PATTERN"/Template_Modify.asp | \
+#    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+#	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
+#	-e "s/##Location_#/$(echo $LOCATION)/g" \
+#	>  $_output/"$TEMPLATE"_Modify.asp
+source "$INCLUDE"/Template_Modify.sh
+template_modify > $output/"$TEMPLATE"_Modify.asp
 }
+
 _template_modify_layout() {
 source "$INCLUDE"/Template_Modify_Layout.sh
 template_modify_layout >  $_output/"$TEMPLATE"_Modify_Layout.asp
@@ -76,8 +89,10 @@ template_script_savemodify >  $_output/Script_SaveModify.asp
 _template_toolbar_list() {
 cp  "$PATTERN"/Template_Toolbar_List.asp  $_output/Toolbar_List.asp
 }
-_template_toolbar_modify() {
-cp  "$PATTERN"/Template_Toolbar_Modify.asp  $_output/Toolbar_Modify.asp
+_toolbar_modify() {
+#cp  "$PATTERN"/Template_Toolbar_Modify.asp  $_output/Toolbar_Modify.asp
+source "$INCLUDE"/Toolbar_Modify.sh
+toolbar_modify
 }
 _template_toolbar_new() {
 cp  "$PATTERN"/Template_Toolbar_New.asp  $_output/Toolbar_New.asp
@@ -138,7 +153,7 @@ _template_printdata
 _template_report
 _template_script_savemodify
 _template_toolbar_list
-_template_toolbar_modify
+_toolbar_modify
 _template_toolbar_new
 _template_script_savenew
 _ws_template_data
@@ -193,7 +208,7 @@ TEMPLATE-ACTIONS:
     --template-printdata: create Talbe-PrintData script.
     --template-report: create Table_Report script.
     --template-toolbar-list: create ToolBar_List script.
-    --template-toolbar-modify: create Toolbar_Modify script.
+    --toolbar-modify: create Toolbar_Modify script.
     --template-toolbar-new: create Toolbar_New script.
     --template-script-savemodify: create Script_SaveModify script.
     --template-script-savenew: create Script_SaveNew script.
@@ -212,7 +227,7 @@ TABLE_OP="table:,pkey:,fields"
 COMMON_OP="help,output:,cfg:,all,pattern:,deploy-script,exec-sql"
 GEN_OP="template,template-modify,template-modify-layout,template-new,template-new-layout,\
 template-printdata,template-report,template-script-savemodify,template-toolbar-list,\
-template-toolbar-modify,template-toolbar-new,template-script-savenew,template-ws-getreportdata,\
+toolbar-modify,template-toolbar-new,template-script-savenew,template-ws-getreportdata,\
 template-sql,ws-template-modifydata"
 
 #echo $GEN_OP
@@ -268,7 +283,7 @@ while true ; do
 	--template-printdata)  _template_printdata; shift;;
 	--template-report)  _template_report; shift;;
 	--template-toolbar-list)  _template_toolbar_list; shift;;
-	--template-toolbar-modify)  _template_toolbar_modify; shift;;
+	--toolbar-modify)  _toolbar_modify; shift;;
 	--template-toolbar-new)  _template_toolbar_new; shift;;
 	--template-script-savemodify)  _template_script_savemodify; shift;;
 	--template-script-savenew)  _template_script_savenew; shift;;

@@ -1,4 +1,4 @@
-header_modify_layout() {
+Header_modify_layout() {
 
 cat <<-EOF
 <!-- Header -->
@@ -52,7 +52,7 @@ cat <<-EOF
 <!-- FieldName: Description -->
 <tr>
     <td align='right' nowrap>
-        <%=objKey.ReadResString("Description",Session("s_Language"))%>[B]:</td>
+        <%=objKey.ReadResString("##FieldName_#",Session("s_Language"))%></td>
     <td></td>
     <td nowrap>
         <input id='##FieldName_#' type='text' class='<%=strReadOnlyClass%>' size=15 maxlength=12 accessKey='B'
@@ -71,6 +71,19 @@ EOF
 
 
 tailer_modify_layout() {
+if [ "$PRG_TYPE". = "DBL". ] ; then
+cat <<-EOF
+<!--tailer_modify_layout(): ${RELATED_TABLE}_Data: Related TABLE-->
+<table id='blkTab7' BORDER=1 BORDERCOLOR='green' cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px;HEIGHT:51%;WIDTH:96%;border-collapse:collapse'>
+    <tr>
+        <td>
+            <iframe id='${RELATED_TABLE}_Data' frameborder=no style='z-index:999;width:100%;height:100%' src=''>
+            </iframe>
+        </td>
+    </tr>
+</table>
+EOF
+else
 cat <<-EOF
 <!--tailer_modify_layout(): 系統資料-->
 <table id='blkTab2' cellpadding=3 cellspacing=0 border=0 style='display:none;margin-left:10px;margin-top:10px'>
@@ -78,6 +91,7 @@ cat <<-EOF
 <%=sys_GenPermissionTablet()%>
 </table>
 EOF
+fi
 
 }
 
