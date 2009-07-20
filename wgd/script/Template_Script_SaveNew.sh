@@ -73,15 +73,20 @@ cat <<-EOF
 EOF
 }
 
-clearfields_script_savenew() {
+clear_all_field_script_savenew() {
 cat <<-EOF
 function ClearField() {
 EOF
-    
-    clearfield_script_savenew | sed "s/##FieldName_#/$(echo $PKEY)/g"
+   
+    if [ ! "$KEY_TYPE". = "MULTY_KEY". ] ; then 
+	clearfield_script_savenew | sed "s/##FieldName_#/$(echo $PKEY)/g"
+    fi
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
-	clearfield_script_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	FieldType=$(echo $fd | gawk -F "/" '{print $2}')
+	if [ ! "$FieldType". = "System". ] ; then
+	    clearfield_script_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	fi
     done
 
 cat <<-EOF
@@ -95,10 +100,21 @@ template_script_savenew() {
     field_script_savenew | sed "s/##FieldName_#/$(echo $PKEY)/g"
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
-	field_script_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
+        FieldType=$(echo $fd | gawk -F "/" '{print $2}')
+        FieldTitle=$(echo $fd | gawk -F "/" '{print $7}')
+        FieldRES=$(echo $fd | gawk -F "/" '{print $14}')
+        isAddDisplay=$(echo $fd | gawk -F "/" '{print $9}')
+
+
+	if [ ! "$FieldType" = "System" ] ; then
+	    if [ ! "$FieldType". = "Hidden". ] ; then
+		echo 1>&2 "FD:" $FieldName
+		field_script_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	    fi
+	fi
     done
 
     body_script_savenew | sed "s/##PKEY_#/$(echo $PKEY)/g"
-    clearfields_script_savenew
+    clear_all_field_script_savenew
     tailer_script_savenew
 }

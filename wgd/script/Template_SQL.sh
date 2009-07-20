@@ -15,14 +15,29 @@
 #DOCROOT=/GDCRM
 
 table_body() {
-    local TableFD="$PFIELD $FIELDS"
+    #local TableFD="$PFIELD $FIELDS"
+    local TableFD="$FIELDS"
     local priority=0
     for ft in $TableFD ; do
 	local fieldname=$(echo $ft | gawk -F '/' '{print $1}' )
         local datatype=$(echo $ft | gawk -F '/' '{print $3}' )
-	local datalength=$(echo $ft | gawk -F '/' '{print $4}' )
+	local datalength="($(echo $ft | gawk -F '/' '{print $4}' ))"
         local isnull=$(echo $ft | gawk -F '/' '{print $5}' )
-	echo -n \[$fieldname\] \[$datatype\] '('$datalength')' $isnull NULL ,
+        local default_value=$(echo $ft | gawk -F '/' '{print $13}' )
+	if [ "$default_value". == "". ] ; then
+	    DEFAULT_VAL=""
+	else
+	    if [ "$default_value". == "-". ] ; then
+		DEFAULT_VAL=""
+	    else
+		DEFAULT_VAL="DEFAULT ("$default_value")"
+	    fi
+	fi
+	if [ "$datatype". = "bigint". ] ; then
+	    datalength=""
+	fi
+	#echo -n \[$fieldname\] \[$datatype\] '('$datalength')' $isnull NULL ,
+	echo -n \[$fieldname\] \[$datatype\] $datalength $isnull NULL $DEFAULT_VAL,
     done
 }
 table_sql() {
@@ -48,7 +63,8 @@ EOF
 }
 
 table_function_body() {
-local TableFD="$PFIELD $FIELDS"
+#local TableFD="$PFIELD $FIELDS"
+local TableFD="$FIELDS"
 for ft in $TableFD ; do
 
     local fieldname=$(echo $ft | gawk -F '/' '{print $1}' )
@@ -69,7 +85,7 @@ SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
-Create FUNCTION [dbo].[fn_Data_Whrs](@strLang nvarchar(3))
+Create FUNCTION [dbo].[fn_Data_${TEMPLATE}](@strLang nvarchar(3))
 RETURNS TABLE
 AS
 RETURN (
@@ -88,10 +104,10 @@ program_sql() {
     local Priority=20
     local ModuleID=$GD_ModuleID
     local CategoryID=0051
-    local ProgNameENG=$TABLE
-    local ProgNameCHT=$TABLE
+    local ProgNameENG=$TEMPLATE
+    local ProgNameCHT=$TEMPLATE
 
-    local ProgNameCHS=$TABLE
+    local ProgNameCHS=$TEMPLATE
     local ParentProgID=""
     local IsDisplay=1
     local IsLog=0
@@ -129,7 +145,8 @@ programfields_sql() {
 
 echo delete ProgramField where ProgID=\'$TEMPLATE\'
 echo go
-local TableFD="$PFIELD $FIELDS"
+#local TableFD="$PFIELD $FIELDS"
+local TableFD="$FIELDS"
 local priority=0
 for ft in $TableFD ; do
 

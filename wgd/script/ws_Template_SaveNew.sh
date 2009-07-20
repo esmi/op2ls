@@ -169,7 +169,12 @@ ws_template_savenew() {
     field_ws_template_savenew | sed "s/##FieldName_#/$(echo $PKEY)/g"
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
-	field_ws_template_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	FieldShowType=$(echo $fd | gawk -F "/" '{print $2}')
+	if [ ! "$FieldShowType". = "System".  ] ; then
+	    if [ ! "$FieldShowType". = "Hidden".  ] ; then
+		field_ws_template_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	    fi
+	 fi
     done
 
     tailer_ws_template_savenew
