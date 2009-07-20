@@ -1,4 +1,4 @@
-Header_modify_layout() {
+header_modify_layout() {
 
 cat <<-EOF
 <!-- Header -->
@@ -9,7 +9,7 @@ EOF
 pkey_modify_layout() {
 cat <<-EOF
 
-<!-- pkey_modify_layout(): PKEY Field: WhrsId -->
+<!-- pkey_modify_layout(): PKEY Field: ##PKEY_# -->
 <table cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px'>
 <tr>
     <td align=right nowrap>
@@ -49,7 +49,7 @@ EOF
 
 field_text_modify_layout() {
 cat <<-EOF
-<!-- FieldName: Description -->
+<!-- FieldName: ##FieldName_# -->
 <tr>
     <td align='right' nowrap>
         <%=objKey.ReadResString("##FieldName_#",Session("s_Language"))%></td>
@@ -73,8 +73,8 @@ EOF
 tailer_modify_layout() {
 if [ "$PRG_TYPE". = "DBL". ] ; then
 cat <<-EOF
-<!--tailer_modify_layout(): ${RELATED_TABLE}_Data: Related TABLE-->
-<table id='blkTab7' BORDER=1 BORDERCOLOR='green' cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px;HEIGHT:51%;WIDTH:96%;border-collapse:collapse'>
+<!--${RELATED_TABLE}_Data: Related TABLE, tailer_modify_layout(): -->
+<table id='blkTab2' BORDER=1 BORDERCOLOR='green' cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px;HEIGHT:51%;WIDTH:96%;border-collapse:collapse'>
     <tr>
         <td>
             <iframe id='${RELATED_TABLE}_Data' frameborder=no style='z-index:999;width:100%;height:100%' src=''>
@@ -98,12 +98,15 @@ fi
 template_modify_layout() {
 
     header_modify_layout
-    pkey_modify_layout | sed "s/##PKEY_#/`echo $PKEY`/g"
+    #pkey_modify_layout | sed "s/##PKEY_#/`echo $PKEY`/g"
     folder_tag_modify_layout
     field_header_modify_layout
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
-	field_text_modify_layout | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	FieldInputType=$(echo $fd | gawk -F "/" '{print $2}')
+	if [ ! "$FieldInputType". = "System". ] ; then
+	    field_text_modify_layout | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	fi
     done
     field_tailer_modify_layout
     tailer_modify_layout

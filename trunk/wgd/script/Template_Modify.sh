@@ -1,16 +1,18 @@
 
-
+## Template_Modify.sh
 #### base function
-key_count() {
-    local count=0
-    for key_fd in `echo $MULTY_KEY | sed 's/,/ /g'` ; do
-        count="`expr $count + 1`"
-    done
-    echo $count
-}
-key_name() {
-    echo $1 | gawk -F , "{ print \$$2}"
-}
+#key_count() {
+#    local count=0
+#    #for key_fd in `echo $MULTY_KEY | sed 's/,/ /g'` ; do
+#    #echo $KEY_MULTY
+#    for key_fd in `echo $KEY_MULTY | sed 's/,/ /g'` ; do
+#        count="`expr $count + 1`"
+#    done
+#   echo $count
+#}
+#key_name() {
+#    echo $1 | gawk -F , "{ print \$$2}"
+#}
 
 template_modify_header() {
 cat <<-EOF
@@ -144,10 +146,13 @@ end if
 <script language='jscript.encode' src='/GDCRM/library/sys_SwitchMultiLangField_C.js'></script>
 <script language='jscript.encode' src='/GDCRM/library/sys_CopyMultiLanguageField_C.js'></script>
 <script language='jscript.encode' src='/GDCRM/library/sys_ShowAttachment_C.js'></script>
+<script language='jscript.encode' src='/GDCRM/library/sys_SwitchTab_C.js'></script>
 
 <!-- Start of 程式Global變數設定-->
 <script language='jscript.encode'>
 //標準的Global變數定義
+var g_intTabCount = 2; 
+var g_intCurrentTab = 1; 
 var g_blnDebug = <%=lcase(Session("s_DebugMode"))%>;
 var g_aryPerm = new Array(<%=lcase(aryPerm(0))%>,<%=lcase(aryPerm(1))%>,<%=lcase(aryPerm(2))%>,<%=lcase(aryPerm(3))%>,<%=lcase(aryPerm(4))%>,<%=lcase(aryPerm(5))%>,<%=lcase(aryPerm(6))%>,<%=lcase(aryPerm(7))%>,<%=aryPerm(8)%>);
 var g_strProgID = sys_XMLEncode("<%=strProgID%>");
@@ -318,9 +323,8 @@ EOF
 
 #### AfterLoadData()
 _multy_key_split2() {
-    local lastkey="`key_name $MULTY_KEY $KEY_COUNT`"
-
-    for fd in `echo $MULTY_KEY | sed 's/,/ /g'` ; do
+    local lastkey="`key_name "$KEY_MULTY" $KEY_COUNT`"
+    for fd in `echo "$KEY_MULTY" | sed 's/,/ /g'` ; do
 	tailer="+ \"' AND \" + "
 	if [ $fd = $lastkey ] ; then 
 	    tailer="+ \"'\" ;"
@@ -329,10 +333,9 @@ _multy_key_split2() {
     done
 }
 _multy_key_split1() {
-   
-    local lastkey="`key_name $MULTY_KEY $KEY_COUNT`"
+    local lastkey="`key_name "$KEY_MULTY" $KEY_COUNT`"
 
-    for fd in `echo $MULTY_KEY | sed 's/,/ /g'` ; do
+    for fd in `echo "$KEY_MULTY" | sed 's/,/ /g'` ; do
 	tailer="+ \",\" +"
 	if [ $fd = $lastkey ] ; then 
 	    tailer=";"
@@ -345,17 +348,18 @@ _multy_key_split1() {
 _after_load_data_setting_key(){
 
 if [ "$KEY_TYPE". = "MULTY_KEY". ] ; then
-    _multy_key_split1 $MULTY_KEY 
+    _multy_key_split1 "$KEY_MULTY"
 else
     echo "document.all['##PKEY_#'].value;"
 fi
 }
+
 after_load_data() {
 cat <<-EOF
 function AfterLoadData() {
     //Update Attachment Icon
     sys_ChangeAttachToolIcon();
-    //sys_SwitchTab(g_intCurrentTab);
+    sys_SwitchTab(g_intCurrentTab);
     //Setting key filed value
     document.all['gd_Key'].value = 
     $(_after_load_data_setting_key | sed 's/^/\t\t/g') 
@@ -371,17 +375,20 @@ if [ "$PRG_TYPE". = "DBL". ] ; then
 cat <<-EOF
     //Related table. ref: Template_Modify_Layout
     document.all.${RELATED_TABLE}_Data.src = "/GDCRM/Prog/${RELATED_TABLE}/${RELATED_TABLE}.asp?gd_FI=" +
-    `_multy_key_split2 $MULTY_KEY`
+    `_multy_key_split2 "$KEY_MULTY"`
 EOF
 fi
 if [ "$IS_IMPORT". = "TRUE". ] ; then
 cat <<-EOF
-    if ( document.all['cnt'].value != 0   ) { 
-        document.all['act_import'].disabled=true;
-    }
-}
+    //-- with Template_SQL: fn_Data_XXXX.
+    //if ( document.all['cnt'].value != 0   ) { 
+    //    document.all['act_import'].disabled=true;
+    //}
 EOF
 fi
+cat <<-EOF
+}
+EOF
 }
 
 ## ImportData
@@ -439,24 +446,36 @@ cat <<-EOF
 </html>
 EOF
 }
-TEMPLATE=HSImport
-PRG_TYPE=DBL
+#FILE_TYPE=RELATED
+#PRG_TYP=MAIN
+#IS_ATTACH=FALSE
+#IS_IMPORT=FALSE
+#IS_OPENWIN_CODE=FALSE
+#KEY_TYPE=MULTY_KEY
+#KEY_MULTY=DeptId,PeriodId
+#PKEY=GUID
+#TEMPLATE=STKItems
+#RELATED_TABLE=
+#IMPORT_FORMAT=
+#LOCATION=STKItems
+#OUTPUT=STKItems
 
-IS_ATTACH=TRUE
-IS_IMPORT=TRUE
 
-RELATED_TABLE="MsgCustoms"
-KEY_TYPE="MULTY_KEY"
-MULTY_KEY="DeptId,PeriodId,WhrsId"
-KEY_COUNT="`key_count`"
+#TEMPLATE=HSImport
+#PRG_TYPE=DBL
 
-echo $KEY_COUNT
+#IS_ATTACH=TRUE
+#IS_IMPORT=TRUE
 
-#for i in $(seq 1 $KEY_COUNT) ; do
-#    key_name $MULTY_KEY $i
-#done
+#RELATED_TABLE="MsgCustoms"
+#KEY_TYPE="MULTY_KEY"
+#MULTY_KEY="DeptId,PeriodId,WhrsId"
+#KEY_COUNT="`key_count`"
+
+#echo $KEY_COUNT
 
 template_modify() {
+KEY_COUNT="`key_count`"
 template_modify_header
 after_load_data
 import_data

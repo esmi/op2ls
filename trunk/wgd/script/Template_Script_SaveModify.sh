@@ -81,5 +81,5 @@ template_script_savemodify() {
     done
 
     tailer_script_savemodify | sed "s/##PKEY_#/$(echo $PKEY)/g"
-
 }
+

@@ -120,8 +120,8 @@ cat <<-EOF
             <%=objKey.ReadResString("IMPORT_DATA",Session("s_Language"))%> </span>&nbsp;&nbsp;&nbsp;
         </td>
     </tr>
-    fi
 EOF
+    fi
 fi
 cat <<-EOF
 </table>
@@ -130,7 +130,7 @@ EOF
 }
 
 toolbar_modify() {
-toolbar_modify_bar1() {
-toolbar_modify_bar2() {
+toolbar_modify_bar1
+toolbar_modify_bar2
 }
 
