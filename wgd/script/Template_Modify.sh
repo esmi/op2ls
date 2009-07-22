@@ -151,7 +151,7 @@ end if
 <!-- Start of 程式Global變數設定-->
 <script language='jscript.encode'>
 //標準的Global變數定義
-var g_intTabCount = 2; 
+var g_intTabCount = ${TABCOUNT}; 
 var g_intCurrentTab = 1; 
 var g_blnDebug = <%=lcase(Session("s_DebugMode"))%>;
 var g_aryPerm = new Array(<%=lcase(aryPerm(0))%>,<%=lcase(aryPerm(1))%>,<%=lcase(aryPerm(2))%>,<%=lcase(aryPerm(3))%>,<%=lcase(aryPerm(4))%>,<%=lcase(aryPerm(5))%>,<%=lcase(aryPerm(6))%>,<%=lcase(aryPerm(7))%>,<%=aryPerm(8)%>);
@@ -359,7 +359,13 @@ cat <<-EOF
 function AfterLoadData() {
     //Update Attachment Icon
     sys_ChangeAttachToolIcon();
+EOF
+if [ ! "$TABCOUNT". = "0". ] ; then
+cat <<-EOF
     sys_SwitchTab(g_intCurrentTab);
+EOF
+fi
+cat <<-EOF
     //Setting key filed value
     document.all['gd_Key'].value = 
     $(_after_load_data_setting_key | sed 's/^/\t\t/g') 
@@ -381,9 +387,9 @@ fi
 if [ "$IS_IMPORT". = "TRUE". ] ; then
 cat <<-EOF
     //-- with Template_SQL: fn_Data_XXXX.
-    //if ( document.all['cnt'].value != 0   ) { 
-    //    document.all['act_import'].disabled=true;
-    //}
+    if ( document.all['cnt'].value != 0   ) { 
+        document.all['act_import'].disabled=true;
+    }
 EOF
 fi
 cat <<-EOF
@@ -401,7 +407,7 @@ function ImportData() {
     }
     else {
     
-        var strURL = "ws_ImportData.asp?gd_Key=" + escape(document.all['gd_Key'].value);
+        var strURL = "ws_${TEMPLATE}_ImportData.asp?gd_Key=" + escape(document.all['gd_Key'].value);
         var xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
         xmlHttp.open("GET", strURL, false);
         xmlHttp.send();
