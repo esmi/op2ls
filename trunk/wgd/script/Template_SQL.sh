@@ -62,6 +62,23 @@ GO
 EOF
 }
 
+table_function_filter() {
+if [ "$KEY_TYPE". = "MULTY_KEY". ] ; then
+    PROCESS_KEY="`echo $KEY_MULTY | sed 's/,/ /g'`"
+else
+    PROCESS_KEY="$PKEY"
+fi
+local wc=`echo $PROCESS_KEY | wc -w`
+for i in `seq $wc` ; do
+    if [ $i = $wc ] ; then
+	tailer=''
+    else
+	tailer=' and '
+    fi
+    fd=`echo $PROCESS_KEY | gawk  "{print $(echo '$'$(echo $i))}"` 
+    echo -n " "$fd = a.$fd  "$tailer"
+done
+}
 table_function_body() {
 #local TableFD="$PFIELD $FIELDS"
 local TableFD="$FIELDS"
@@ -70,6 +87,21 @@ for ft in $TableFD ; do
     local fieldname=$(echo $ft | gawk -F '/' '{print $1}' )
     echo -n $fieldname,
 done
+if [ "$FILE_TYPE". == "MAIN". ] ; then
+    if [ "$PRG_TYPE". == "DBL". ] ; then
+	if [ ! "$RELATED_TABLE". = "". ] ; then
+	    echo -n " ( select count(*) from ${RELATED_TABLE} where $(table_function_filter) ) as cnt"
+	fi
+    fi
+fi
+
+#	(   select count(*)
+#	    from MsgCustoms
+#	    where
+#		DeptId = a.DeptId and
+#		PeriodId  = a.PeriodId and
+#		WhrsId = a.WhrsId ) as cnt
+
 }
 table_function() {
 cat <<-EOF
@@ -94,7 +126,7 @@ EOF
 table_function_body | sed -e 's/^/select /g' -e 's/,$//g'
 
 cat <<-EOF
-  FROM `echo $TEMPLATE`
+  FROM ${TEMPLATE} as a
 )
 GO
 EOF
@@ -161,7 +193,7 @@ for ft in $TableFD ; do
     local ProgID=$TEMPLATE
     local Priority="$priority"
     local Fieldname="$fieldname"
-    local IsMultiLang=1
+    local IsMultiLang=0
     local DialogWindow=""
     local FieldTitleENG="$fieldtitleeng"
     local FieldTitleCHT="$fieldtitlecht"
@@ -251,5 +283,4 @@ template_sql() {
     program_sql
     programfields_sql 
     perm_template_detail
-    
 }

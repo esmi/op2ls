@@ -51,12 +51,8 @@ else
     INCLUDE="`dirname $_link`"
 fi
 PATTERN=./pattern
-
-
 key_count() {
     local count=0
-    #for key_fd in `echo $MULTY_KEY | sed 's/,/ /g'` ; do
-    #echo $KEY_MULTY
     for key_fd in `echo $KEY_MULTY | sed 's/,/ /g'` ; do
         count="`expr $count + 1`"
     done
@@ -64,6 +60,34 @@ key_count() {
 }
 key_name() {
     echo $1 | gawk -F , "{ print \$$2}"
+}
+
+modifydata_where_filter() {
+#    rst1.Filter = "DeptId = '" & strKeyValue1 & "' AND PeriodId = '" & strKeyValue2 & "'"
+#    rst1.Filter = "DeptId = '"   & strKeyValue1 & "'" & " AND " & _
+#		  "PeriodId = '" & strKeyValue2 & "'"
+    for i in `seq $KEYMULTY_CNT` ; do
+	if [ "$i". == "$KEYMULTY_CNT". ] ; then
+	    tailer=''
+	else
+	    tailer=' & " AND " & '
+	fi
+	echo  -n ' "'`echo $KEY_MULTY | gawk -F ',' "{print $(echo '$'$(echo $i))}"`" = N'\""" & strKeyValue"$i" & \"'\""  \
+		$tailer
+    done
+}
+strKeyValue_assign() {
+    for i in `seq $KEYMULTY_CNT` ; do
+	echo -e "\\tstrKeyValue"$i' = split(strKey,",")('$i - 1')' 
+    done
+}
+
+strKeyValue_list() {
+    local string=""
+    for i in `seq $1` ; do
+	string=$string'strKeyValue'"$i "
+    done
+    echo $string | sed -e 's/ $//g' -e 's/ /,/g'
 }
 
 _template() {
@@ -161,10 +185,15 @@ cat "$PATTERN"/ws_Template_Data.asp | \
 }
 _ws_template_delete() {
 echo create $_output/ws_"$TEMPLATE"_Delete.asp
-cat "$PATTERN"/ws_Template_Delete.asp | \
+source "$INCLUDE"/ws_Template_Delete.sh
+ws_template_delete |\
     sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
 	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-	>  $_output/ws_"$TEMPLATE"_Delete.asp
+    > $_output/ws_"$TEMPLATE"_Delete.asp
+#cat "$PATTERN"/ws_Template_Delete.asp | \
+#    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+#	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
+#	>  $_output/ws_"$TEMPLATE"_Delete.asp
 }
 _ws_template_modifydata() {
 echo create $_output/ws_"$TEMPLATE"_ModifyData.asp
@@ -198,6 +227,14 @@ _template_ws_getreportdata() {
 echo create $_output/ws_GetReportData.asp
 cp  "$PATTERN"/Template_ws_GetReportData.asp  $_output/ws_GetReportData.asp
 }
+
+_ws_template_importdata() {
+if [ "$IS_IMPORT". == "TRUE". ] ; then
+    echo create $_output/ws_"$TEMPLATE"_ImportData.asp
+    source "$INCLUDE"/ws_Template_ImportData.sh
+    ws_template_importdata > $_output/ws_"$TEMPLATE"_ImportData.asp
+fi
+}
 _template_sql() {
 source "$INCLUDE"/Template_SQL.sh
 local script=$_output/"$TEMPLATE".sql
@@ -223,6 +260,7 @@ _ws_template_delete
 _ws_template_modifydata
 _ws_template_savemodify
 _ws_template_savenew
+_ws_template_importdata
 _template_ws_getreportdata
 _template_sql
 }
@@ -266,7 +304,6 @@ if [ -e $XLS_schema ] ; then
 	     -e "s/OUTPUT=$/OUTPUT=$WKS/g" | grep -i PKEY | sed 's/^.*=//g'`
 
     #echo $the_pkey
-
     #echo $FIELDS
     #gawk -F '|' '{print $1"/"$4"/"$2"/"$3"/"$6"NULL/"$15"/"$16"/"$17 " \\"}' |\
     SEARCH_STR="\*FD"
@@ -316,7 +353,9 @@ echo Execute "$_output/$TEMPLATE.sql" to server: $SQLSRV, database: $SQLDB
 echo to create "$TEMPLATE" table, "fn_DATA_$TEMPLATE" function
 echo add data to "Program" and "ProgramField" tables.
 echo ""
-osql -S $SQLSRV  -U $SQLUSR -P $SQLPWD -d $SQLDB -i "$_output/$TEMPLATE.sql" | piconv -f big5 -t $LANG
+#cat "$_output/$TEMPLATE.sql" | iconv -f UTF-8 -t UCS-2LE > "$_output/$TEMPLATE.ucs2.sql"
+cat "$_output/$TEMPLATE.sql" | piconv -f UTF-8 -t big5 > "$_output/$TEMPLATE.big5.sql"
+osql -S $SQLSRV  -U $SQLUSR -P $SQLPWD -d $SQLDB -i "$_output/$TEMPLATE.big5.sql" | piconv -f big5 -t $LANG
 
 }
 
@@ -352,6 +391,7 @@ TEMPLATE-ACTIONS:
     --ws-template-modifydata: create ws_Table_ModifyData script.
     --ws-template-savemodify: create ws_Table_SaveModify script.
     --ws-template-savenew: create ws_Table_SaveNew script.
+    --ws-template-importdata: create ws_TABLE_importdata script
     --template-ws-getreportdata: create ws_GetReportData script.
     --template-sql: create template sql script.
 example:
@@ -369,7 +409,7 @@ CREATE_CFG="create-cfg,wks-name:,schema-path:,schema-file:"
 GEN_OP="template,template-modify,template-modify-layout,template-new,template-new-layout,\
 template-printdata,template-report,template-script-savemodify,toolbar-list,\
 toolbar-modify,template-toolbar-new,template-script-savenew,template-ws-getreportdata,\
-template-sql,ws-template-modifydata"
+template-sql,ws-template-modifydata,ws-template-importdata,ws-template-delete"
 
 #echo $GEN_OP
 ALL_OP="$GEN_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG"
@@ -479,6 +519,7 @@ while true ; do
 	--ws-template-modifydata)  _ws_template_modifydata; shift;;
 	--ws-template-savemodify)  _ws_template_savemodify; shift;;
 	--ws-template-savenew)  _ws_template_savenew; shift;;
+	--ws-template-importdata)  _ws_template_importdata; shift;;
 	--template-ws-getreportdata)  _template_ws_getreportdata; shift;;
 	--template-sql)  _template_sql; shift;;
         --)             break ;;

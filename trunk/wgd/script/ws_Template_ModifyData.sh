@@ -55,7 +55,7 @@ modifydata_header1_multy_key() {
 if [ "$KEY_TYPE". == "MULTY_KEY". ] ; then
 cat <<-EOF
 
-Dim $(strKeyValue_list)
+Dim $(strKeyValue_list $KEYMULTY_CNT)
 strKey = trim(Request("gd_Key"))
 if instr(1,strKey,",") > 0 then
     $(strKeyValue_assign)
@@ -371,7 +371,6 @@ cat <<-EOF
 '**************************************************************************************************
 dim strXML
 
-
 '讀取要修改的那一筆
 strSQL = "SELECT * " & _
          "FROM fn_Data_##Template_#('" & Session("s_Language") & "') " & _
@@ -436,25 +435,8 @@ Response.Write objNode.xml
 %>
 EOF
 }
-modifydata_where_filter() {
-#    rst1.Filter = "DeptId = '" & strKeyValue1 & "' AND PeriodId = '" & strKeyValue2 & "'"
-#    rst1.Filter = "DeptId = '"   & strKeyValue1 & "'" & " AND " & _
-#		  "PeriodId = '" & strKeyValue2 & "'"
-    for i in `seq $KEYMULTY_CNT` ; do
-	if [ "$i". == "$KEYMULTY_CNT". ] ; then
-	    tailer=''
-	else
-	    tailer=' & " AND " & '
-	fi
-	echo  -n '"'`echo $KEY_MULTY | gawk -F ',' "{print $(echo '$'$(echo $i))}"`" = N'\""" & strKeyValue"$i " & \"'\""  \
-		$tailer
-    done
-}
 modifydata_rst_filter() {
-#    rst1.Filter = "DeptId = '" & strKeyValue1 & "' AND PeriodId = '" & strKeyValue2 & "'"
-#    rst1.Filter = "DeptId = '"   & strKeyValue1 & "'" & " AND " & _
-#		  "PeriodId = '" & strKeyValue2 & "'"
-    for i in `seq $KEYMULTY_CNT` ; do
+   for i in `seq $KEYMULTY_CNT` ; do
 	if [ "$i". == "$KEYMULTY_CNT". ] ; then
 	    tailer=''
 	else
@@ -484,24 +466,8 @@ strKeyValue_assing_rst() {
 	echo -e "\\tstrKeyValue"$i '= rst1("'`echo $KEY_MULTY | 
 	    gawk -F ',' "{print $(echo '$'$(echo $i))}"`'").value'
     done
-#    'strKeyValue1 = rst1("DeptId").value
-#    'strKeyValue2 = rst1("PeriodId").value
 }
 
-strKeyValue_assign() {
-    for i in `seq $KEYMULTY_CNT` ; do
-	echo -e "\\tstrKeyValue"$i' = split(strKey,",")('$i - 1')' 
-    done
-}
-
-strKeyValue_list() {
-    
-    local string=""
-    for i in `seq $KEYMULTY_CNT` ; do
-	string=$string'strKeyValue'"$i "
-    done
-    echo $string | sed -e 's/ $//g' -e 's/ /,/g'
-}
 
 ws_template_modifydata() {
     #echo $KEY_MULTY | sed 's/,/ /g' | wc -w
