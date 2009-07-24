@@ -64,10 +64,10 @@ If rstTemp.RecordCount = 1 Then
 				    rstTemp.Fields("FileName").value
 else
     if rstTemp.RecordCount < 1 then
-	Response.Write "Attachment data not found, Please check attachment data"
+        Response.Write "Attachment data not found, Please check attachment data"
     End if
     if rstTemp.RecordCount > 1 then
-	Response.Write "Attachment data more than one file, Please check attachment data"
+        Response.Write "Attachment data more than one file, Please check attachment data"
     End if
     'Response.Write "Attachment data error, Please check attachment data"
     Response.End
@@ -98,7 +98,7 @@ Set rstExcel = Server.CreateObject("ADODB.Recordset")
 
 '[Sheet1$]工作表名稱需要有固定名稱:[${WKSHEET}$]
 'ATTACH_FIELDS: ${ATTACH_FIELDS}
-strSQL = "Select ${ATTACH_FIELDS} from [${WKSHEET}$]"
+strSQL = "Select ${KEY_MULTY},${ATTACH_FIELDS} from [${WKSHEET}$]"
 
 cnnExcel.CursorLocation = 3
 cnnExcel.Open strExcelConn
@@ -215,14 +215,16 @@ _importdata_check_key() {
 
 ws_template_importdata() {
     KEYMULTY_CNT=`echo $KEY_MULTY | sed 's/,/ /g' | wc -w`
-    echo 1>&2 $KEYMULTY_CNT
+    #echo 1>&2 $KEYMULTY_CNT
     importdata_header
     importdata_related_data
     importdata_get_attach_info
     importdata_prepare
     importdata_attach_open
+
     importdata_attach_check
     importdata_write
+    
     importdata_tailer
 }
 

@@ -472,7 +472,7 @@ strKeyValue_assing_rst() {
 ws_template_modifydata() {
     #echo $KEY_MULTY | sed 's/,/ /g' | wc -w
     KEYMULTY_CNT=`echo $KEY_MULTY | sed 's/,/ /g' | wc -w`
-    echo 1>&2 $KEYMULTY_CNT
+    #echo 1>&2 $KEYMULTY_CNT
     #KEYMULTY_CNT=2
     modifydata_header0
     modifydata_header1_multy_key

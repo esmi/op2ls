@@ -36,7 +36,7 @@ table_body() {
 	if [ "$datatype". = "bigint". ] ; then
 	    datalength=""
 	fi
-	#echo -n \[$fieldname\] \[$datatype\] '('$datalength')' $isnull NULL ,
+	echo 1>&2 \[$fieldname\] \[$datatype\] '('$datalength')' $isnull NULL ,
 	echo -n \[$fieldname\] \[$datatype\] $datalength $isnull NULL $DEFAULT_VAL,
     done
 }
@@ -53,6 +53,9 @@ table_body | sed -e 's/,$//g' -e 's/,/,#/g' | tr '#' '\n'
 cat <<-EOF
 ) ON [PRIMARY]
 GO
+EOF
+if [ ! "$PKEY". = "". ] ; then
+cat <<-EOF
 ALTER TABLE [dbo].[`echo $TEMPLATE`] ADD
 CONSTRAINT [PK_`echo $TEMPLATE`] PRIMARY KEY  CLUSTERED
 (
@@ -60,6 +63,7 @@ CONSTRAINT [PK_`echo $TEMPLATE`] PRIMARY KEY  CLUSTERED
 )  ON [PRIMARY]
 GO
 EOF
+fi
 }
 
 table_function_filter() {
@@ -96,8 +100,8 @@ if [ "$FILE_TYPE". == "MAIN". ] ; then
 fi
 
 #	(   select count(*)
-#	    from MsgCustoms
-#	    where
+#	    from MsgCustoms -->${RELATED_TABLE}
+#	    where      --> $(table_function_filter)
 #		DeptId = a.DeptId and
 #		PeriodId  = a.PeriodId and
 #		WhrsId = a.WhrsId ) as cnt
@@ -131,6 +135,14 @@ cat <<-EOF
 GO
 EOF
 }
+
+userview_sql() {
+cat <<-EOF
+	delete from UserViewDetail where ProgID='${TEMPLATE}'
+	delete from UserViewDefine where ProgID='${TEMPLATE}'
+EOF
+}
+
 program_sql() {
     local ProgID=$TEMPLATE
     local Priority=20
@@ -280,6 +292,7 @@ template_sql() {
     echo use $GD_DATABASE
     table_sql
     table_function
+    userview_sql
     program_sql
     programfields_sql 
     perm_template_detail

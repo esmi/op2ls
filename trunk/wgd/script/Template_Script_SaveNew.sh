@@ -108,7 +108,7 @@ template_script_savenew() {
 
 	if [ ! "$FieldType" = "System" ] ; then
 	    if [ ! "$FieldType". = "Hidden". ] ; then
-		echo 1>&2 "FD:" $FieldName
+		#echo 1>&2 "FD:" $FieldName
 		field_script_savenew | sed "s/##FieldName_#/$(echo $FieldName)/g"
 	    fi
 	fi
