@@ -334,7 +334,6 @@ template_entry_multy_key2() {
 	echo  "$1""$res""$2"
 	echo  "$3""$fd""$4" $tailer
     done
-    
 }
 template_entry_multy_key1() {
     local lastkey="`key_name "$KEY_MULTY" $KEY_COUNT`"
@@ -423,8 +422,8 @@ if [ "$KEY_TYPE". = "MULTY_KEY". ] ; then
 cat <<-EOF
     var strRemindMsg = 
 	$(template_entry_multy_key2 \
-            '               "<%=objKey.ReadResString("' '",Session("s_Language"))%>" + " : " +  ' \
-	    '		    objNode.selectSingleNode("'  '").text')
+            '               "<%=objKey.ReadResString("'	    '",Session("s_Language"))%>" + " : " +  ' \
+	    '		    objNode.selectSingleNode("'	    '").text')
 EOF
 else
 cat <<-EOF

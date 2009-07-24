@@ -68,8 +68,8 @@ EOF
 field_body_count() {
 if [ "$PRG_TYPE". = "DBL". ] ; then
 cat <<-EOF
-<!-- Hide body_cnt -->
-<input id=body_cnt type=text>
+<!-- Hide cnt -->
+<input id=cnt type=text>
 EOF
 fi
 }

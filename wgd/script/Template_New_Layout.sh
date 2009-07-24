@@ -44,7 +44,7 @@ template_new_layout() {
 		FieldRES="$FieldName"	    
 	fi
 
-	echo 1>&2 'FD:' $FieldName, '$FieldType:' $FieldType, 'ResName:' $FieldRES, 'isDisplay:' $isAddDisplay
+	#echo 1>&2 'FD:' $FieldName, '$FieldType:' $FieldType, 'ResName:' $FieldRES, 'isDisplay:' $isAddDisplay
 
 	if [[ ! "$isAddDisplay". = "N". ]]; then
 	    field_new_layout

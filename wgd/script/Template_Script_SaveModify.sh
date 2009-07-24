@@ -72,12 +72,17 @@ EOF
 
 template_script_savemodify() {
     header_script_savemodify
-    echo '//<!-- field_script_savemodify(): $PKEY -->'
-    field_script_savemodify | sed "s/##FieldName_#/$(echo $PKEY)/g"
+    if [ ! "$KEY_TYPE". = "MULTY_KEY". ] ; then
+	echo '//<!-- field_script_savemodify(): $PKEY -->'
+	field_script_savemodify | sed "s/##FieldName_#/$(echo $PKEY)/g"
+    fi
     echo '//<!-- field_script_savemodify(): $FIELDS -->'
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
-	field_script_savemodify | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	FieldType=$(echo $fd | gawk -F "/" '{print $2}')
+	if [ ! "$FieldType". = "System". ] ; then
+	    field_script_savemodify | sed "s/##FieldName_#/$(echo $FieldName)/g"
+	fi
     done
 
     tailer_script_savemodify | sed "s/##PKEY_#/$(echo $PKEY)/g"

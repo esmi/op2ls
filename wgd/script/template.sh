@@ -142,9 +142,9 @@ echo create $_output/"$TEMPLATE"_Report.asp
 cp "$PATTERN"/Template_Report.asp  $_output/"$TEMPLATE"_Report.asp
 }
 _template_script_savemodify() {
-echo create $_output/Script_SaveModify.asp
-source "$INCLUDE"/Template_Script_SaveModify.sh
-template_script_savemodify >  $_output/Script_SaveModify.asp
+    echo create $_output/Script_SaveModify.asp
+    source "$INCLUDE"/Template_Script_SaveModify.sh
+    template_script_savemodify >  $_output/Script_SaveModify.asp
 }
 _toolbar_list() {
     #cp  "$PATTERN"/Template_Toolbar_List.asp  $_output/Toolbar_List.asp
@@ -162,66 +162,68 @@ _toolbar_list() {
     toolbar_list > $_output/Toolbar_List.asp
 }
 _toolbar_modify() {
-#cp  "$PATTERN"/Template_Toolbar_Modify.asp  $_output/Toolbar_Modify.asp
-echo create $_output/Toolbar_Modify.asp
-source "$INCLUDE"/Toolbar_Modify.sh
-toolbar_modify > $_output/Toolbar_Modify.asp
+    #cp  "$PATTERN"/Template_Toolbar_Modify.asp  $_output/Toolbar_Modify.asp
+    echo create $_output/Toolbar_Modify.asp
+    source "$INCLUDE"/Toolbar_Modify.sh
+    toolbar_modify > $_output/Toolbar_Modify.asp
 }
 _template_toolbar_new() {
 echo create $_output/Toolbar_New.asp
 cp  "$PATTERN"/Template_Toolbar_New.asp  $_output/Toolbar_New.asp
 }
 _template_script_savenew() {
-echo create  $_output/Script_SaveNew.asp
-source "$INCLUDE"/Template_Script_SaveNew.sh
-template_script_savenew >  $_output/Script_SaveNew.asp
+    echo create  $_output/Script_SaveNew.asp
+    source "$INCLUDE"/Template_Script_SaveNew.sh
+    template_script_savenew >  $_output/Script_SaveNew.asp
 }
 _ws_template_data() {
-echo create  $_output/ws_"$TEMPLATE"_Data.asp
-cat "$PATTERN"/ws_Template_Data.asp | \
-    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-	>  $_output/ws_"$TEMPLATE"_Data.asp
+    source $INCLUDE/ws_Template_Data.sh
+    echo create  $_output/ws_"$TEMPLATE"_Data.asp
+    #cat "$PATTERN"/ws_Template_Data.asp | \
+    ws_template_data | \
+	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+	    >  $_output/ws_"$TEMPLATE"_Data.asp
 }
 _ws_template_delete() {
-echo create $_output/ws_"$TEMPLATE"_Delete.asp
-source "$INCLUDE"/ws_Template_Delete.sh
-ws_template_delete |\
-    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-    > $_output/ws_"$TEMPLATE"_Delete.asp
+    echo create $_output/ws_"$TEMPLATE"_Delete.asp
+    source "$INCLUDE"/ws_Template_Delete.sh
+    ws_template_delete |\
+	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+        > $_output/ws_"$TEMPLATE"_Delete.asp
 #cat "$PATTERN"/ws_Template_Delete.asp | \
 #    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
 #	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
 #	>  $_output/ws_"$TEMPLATE"_Delete.asp
 }
 _ws_template_modifydata() {
-echo create $_output/ws_"$TEMPLATE"_ModifyData.asp
+    echo create $_output/ws_"$TEMPLATE"_ModifyData.asp
 #cat "$PATTERN"/ws_Template_ModifyData.asp | \
 #    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
 #	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
 #	>  $_output/ws_"$TEMPLATE"_ModifyData.asp
-source "$INCLUDE"/ws_Template_ModifyData.sh
-ws_template_modifydata | \
-    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-        >  $_output/ws_"$TEMPLATE"_ModifyData.asp
+    source "$INCLUDE"/ws_Template_ModifyData.sh
+    ws_template_modifydata | \
+	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+            >  $_output/ws_"$TEMPLATE"_ModifyData.asp
 }
 _ws_template_savemodify() {
-echo create $_output/ws_"$TEMPLATE"_SaveModify.asp
-source "$INCLUDE"/ws_Template_SaveModify.sh
-ws_template_savemodify | \
-    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-	>  $_output/ws_"$TEMPLATE"_SaveModify.asp
+    echo create $_output/ws_"$TEMPLATE"_SaveModify.asp
+    source "$INCLUDE"/ws_Template_SaveModify.sh
+    ws_template_savemodify | \
+	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+	   >  $_output/ws_"$TEMPLATE"_SaveModify.asp
 }
 _ws_template_savenew() {
-echo create  $_output/ws_"$TEMPLATE"_SaveNew.asp
-source "$INCLUDE"/ws_Template_SaveNew.sh
-ws_template_savenew | \
-    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-	>  $_output/ws_"$TEMPLATE"_SaveNew.asp
+    echo create  $_output/ws_"$TEMPLATE"_SaveNew.asp
+    source "$INCLUDE"/ws_Template_SaveNew.sh
+    ws_template_savenew | \
+	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
+	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+	   >  $_output/ws_"$TEMPLATE"_SaveNew.asp
 }
 _template_ws_getreportdata() {
 echo create $_output/ws_GetReportData.asp
@@ -229,17 +231,17 @@ cp  "$PATTERN"/Template_ws_GetReportData.asp  $_output/ws_GetReportData.asp
 }
 
 _ws_template_importdata() {
-if [ "$IS_IMPORT". == "TRUE". ] ; then
-    echo create $_output/ws_"$TEMPLATE"_ImportData.asp
-    source "$INCLUDE"/ws_Template_ImportData.sh
-    ws_template_importdata > $_output/ws_"$TEMPLATE"_ImportData.asp
-fi
+    if [ "$IS_IMPORT". == "TRUE". ] ; then
+	echo create $_output/ws_"$TEMPLATE"_ImportData.asp
+        source "$INCLUDE"/ws_Template_ImportData.sh
+	ws_template_importdata > $_output/ws_"$TEMPLATE"_ImportData.asp
+    fi
 }
 _template_sql() {
-source "$INCLUDE"/Template_SQL.sh
-local script=$_output/"$TEMPLATE".sql
-echo create sql script: $script
-template_sql > $script
+    source "$INCLUDE"/Template_SQL.sh
+    local script=$_output/"$TEMPLATE".sql
+    echo create sql script: $script
+    template_sql > $script
 }
 _template_all() {
 
@@ -349,14 +351,99 @@ fi
 }
 _exec_sql() {
 
-echo Execute "$_output/$TEMPLATE.sql" to server: $SQLSRV, database: $SQLDB
-echo to create "$TEMPLATE" table, "fn_DATA_$TEMPLATE" function
-echo add data to "Program" and "ProgramField" tables.
-echo ""
+cat <<-EOF
+# Execute "$_output/$TEMPLATE.sql" to server: $SQLSRV, database: $SQLDB
+# to create "$TEMPLATE" table, "fn_DATA_$TEMPLATE" function
+# add data to "Program" and "ProgramField" tables.
+# convert sql file to big5 encode for OSQL running.
+cat "$_output/$TEMPLATE.sql" | iconv -f UTF-8 -t big5 > "$_output/$TEMPLATE.big5.sql"
+osql -S $SQLSRV  -U $SQLUSR -P $SQLPWD -d $SQLDB -i "$_output/$TEMPLATE.big5.sql" | piconv -f big5 -t $LANG
+EOF
 #cat "$_output/$TEMPLATE.sql" | iconv -f UTF-8 -t UCS-2LE > "$_output/$TEMPLATE.ucs2.sql"
 cat "$_output/$TEMPLATE.sql" | piconv -f UTF-8 -t big5 > "$_output/$TEMPLATE.big5.sql"
 osql -S $SQLSRV  -U $SQLUSR -P $SQLPWD -d $SQLDB -i "$_output/$TEMPLATE.big5.sql" | piconv -f big5 -t $LANG
 
+}
+
+_project_build() {
+
+    local PROJECTS="$1";    local RELATIONS="$2";   local DEPLOY="$3";	local EXECSQL="$4"; local BUILD_SRC="$5";
+    local BUILD_CFG="$6";   local BUILD_SQL="$7";   
+    local tablename="";	    local PRJECT="";	    local RELATION="";  local n=1;	    local strReturn=""
+    echo "BUILD_SRC: $BUILD_SRC, DEPLOY: $DEPLOY, EXECSQL: $EXECSQL"
+
+    for PROJECT in `echo $PROJECTS` ; do
+
+	strReturn="`template --schema-file $PROJECT.prj.xls`"
+
+	if [ ! "$strReturn". = "". ] ; then
+	    echo project: $PROJECT schema file not found.
+	else
+
+	    echo build project: $PROJECT
+	    RELATION="`echo $RELATIONS | gawk -F ',' "{print $(echo '$'$(echo $n))}"`"
+
+	    if [ "$RELATION". = "". ] ; then
+		if [ $n = 1 ] ; then    echo Option --relation is blank, break build process.;	fi
+		break
+	    fi
+	    if [ "$BUILD_CFG". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    echo "#Create $tablename cfg file and script..."
+		    echo "#template --schema-file $PROJECT.prj.xls --wks-name $table_name --create-cfg > cfg/$tablename.cfg"
+		    template --schema-file $PROJECT.prj.xls --wks-name $tablename --create-cfg > cfg/$tablename.cfg
+		done
+	    fi
+	    if [ "$BUILD_SQL". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    echo "#template --cfg cfg/$tablename.cfg --template-sql"
+		    template --cfg cfg/$tablename.cfg --template-sql
+		done
+	    fi
+	    if [ "$BUILD_SRC". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    echo "#template --cfg cfg/$tablename.cfg --all"
+		    template --cfg cfg/$tablename.cfg --all
+		done
+	    fi
+	    if [ "$DEPLOY". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    echo "# deploy Project:$PROJECT, Table: $tablename source code to target host."
+		    echo template --cfg cfg/$tablename.cfg --deploy-script 
+		    template --cfg cfg/$tablename.cfg --deploy-script 
+		done
+	    fi
+	    if [ "$EXECSQL". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    echo "# exec Project:$PROJECT, Table: $tablename sql code to target dbhost."
+		    echo template --cfg cfg/$tablename.cfg --exec-sql
+		    template --cfg cfg/$tablename.cfg --exec-sql
+		done
+	    fi
+##	    for tablename in `echo $RELATION` ; do
+#		if [ "$BUILD_CFG". == "enabled". ] ; then
+#		    echo "#Create $tablename cfg file and script..."
+#		    echo "#template --schema-file $PROJECT.prj.xls --wks-name $table_name --create-cfg > cfg/$tablename.cfg"
+#		    template --schema-file $PROJECT.prj.xls --wks-name $tablename --create-cfg > cfg/$tablename.cfg
+#		fi
+#		if [ "$BUILD_SRC". == "enabled". ] ; then
+#		    echo "#template --cfg cfg/$tablename.cfg --all"
+#		    template --cfg cfg/$tablename.cfg --all
+#		fi
+#		if [ "$DEPLOY". == "enabled". ] ; then
+#		    echo "# deploy Project:$PROJECT, Table: $tablename source code to target host."
+#		    echo template --cfg cfg/$tablename.cfg --deploy-script 
+#		    template --cfg cfg/$tablename.cfg --deploy-script 
+#		fi
+#		if [ "$EXECSQL". == "enabled". ] ; then
+#		    echo "# exec Project:$PROJECT, Table: $tablename sql code to target dbhost."
+#		    echo template --cfg cfg/$tablename.cfg --exec-sql
+#		    template --cfg cfg/$tablename.cfg --exec-sql
+#		fi
+#	    done
+	fi
+	echo "" ; n=$(expr $n + 1)
+    done
 }
 
 __show_help() {
@@ -374,31 +461,33 @@ Usage: ${_name} [--cfg <file>|[--table <tablename>][--pkey <keyname>][--fields <
 Create-CFG-ACTIONS:
     --schema-path <path> --schema-file <xlsfile> --wks-name <wks-name>  --create-cfg
 TEMPLATE-ACTIONS:
-    --template: create Table script.
-    --template-modify: create Table_Modify script.
-    --template-modify-layout: create Table_Modify_Layout script.
-    --template-new: create Table_New script.
-    --template-new-layout: create Talbe_New_Layout script.
-    --template-printdata: create Talbe-PrintData script.
-    --template-report: create Table_Report script.
-    --toolbar-list: create ToolBar_List script.
-    --toolbar-modify: create Toolbar_Modify script.
-    --template-toolbar-new: create Toolbar_New script.
-    --template-script-savemodify: create Script_SaveModify script.
-    --template-script-savenew: create Script_SaveNew script.
-    --ws-template-data: create ws_Table_Data script.
-    --ws-template-delete: create ws_Table_Delete script.
-    --ws-template-modifydata: create ws_Table_ModifyData script.
-    --ws-template-savemodify: create ws_Table_SaveModify script.
-    --ws-template-savenew: create ws_Table_SaveNew script.
-    --ws-template-importdata: create ws_TABLE_importdata script
-    --template-ws-getreportdata: create ws_GetReportData script.
-    --template-sql: create template sql script.
+    --template: create Table entry script.		--toolbar-list: create ToolBar_List script.
+
+    --template-modify: create Table_Modify script.	--template-modify-layout: Table_Modify_Layout.
+    --toolbar-modify: create Toolbar_Modify script.	--ws-template-savemodify: ws_Table_SaveModify.
+    --template-script-savemodify: Script_SaveModify.    
+
+    --template-new: create Table_New script.		--template-new-layout: create Talbe_New_Layout script.
+    --template-toolbar-new: create Toolbar_New script.	--ws-template-savenew: ws_Table_SaveNew .
+    --template-script-savenew: create Script_SaveNew.
+
+    --ws-template-data:	      ws_Table_Data script.     --ws-template-modifydata: ws_Table_ModifyData.
+    --ws-template-delete:     ws_Table_Delete script.   --ws-template-importdata: ws_Table_importdata. 
+
+    --template-printdata: Talbe-PrintData script.	--template-report: create Table_Report script.
+    --template-ws-getreportdata: ws_GetReportData.	--template-sql: create template sql script.
+build:
+    --project <prj_a prj_b> : define project.	
+    --relation <rlta1 rlt2 rlt3,rltb1 rltb2 rltb3>: redfine relations for project a and b.
+    --define < deploy | execsql > : define deploy to targethost, or run --exec-sql to target dbhost.
 example:
     template --schema-file STKImport.prj.xls --wks-name STKItems --create-cfg > cfg/STKItems.cfg
     template --cfg cfg/STKItems.cfg --all           ## create asp and sql script to \$OUTPUT path.
     template --cfg cfg/STKItems.cfg --run-sql       ## not implement, run --template-sql output to target DB.
     template --cfg cfg/STKITems.cfg --deploy-script	## deploy scripts to target path.
+build example:
+    template --project MsgImport  --relation "MsgImport MsgStock" --define "src execsql deploy" --build
+    template --project "prja prjb" --relation "rela1 rela2,relb1 relb2" --define "cfg src sql deploy execsql" --build
 EOF
 }
 
@@ -409,10 +498,11 @@ CREATE_CFG="create-cfg,wks-name:,schema-path:,schema-file:"
 GEN_OP="template,template-modify,template-modify-layout,template-new,template-new-layout,\
 template-printdata,template-report,template-script-savemodify,toolbar-list,\
 toolbar-modify,template-toolbar-new,template-script-savenew,template-ws-getreportdata,\
-template-sql,ws-template-modifydata,ws-template-importdata,ws-template-delete"
-
+template-sql"
+WS_OP="ws-template-modifydata,ws-template-importdata,ws-template-delete,ws-template-data"
+BUILD_OP="build,project:,relation:,define:"
 #echo $GEN_OP
-ALL_OP="$GEN_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG"
+ALL_OP="$GEN_OP,$WS_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG,$BUILD_OP"
 orig_command="$@"
 OPT=`getopt -o "" --longoptions=$ALL_OP -- "$@"`
 #orig_command="$*"
@@ -426,9 +516,40 @@ _output=./output
 eval set -- "$OPT"
 if [  $# -eq 1 ] ; then __show_help; fi
 
+deploy=disable
+execsql=disable
+buildsrc=disable
+sql=disable
+cfg=disable
+project=""
+relation=""
 set -e
 while true ; do
     case "$1" in
+	--define)   shift; defines="$1";
+		    for defi in `echo $defines` ; do
+			#echo defi: \"$defi\"
+			if [ "$defi". = "deploy". ] ; then 
+			    deploy=enabled ; #echo deploy: $deploy
+			fi
+			if [ "$defi". = "execsql". ] ; then 
+			    execsql=enabled ; #echo execsql: $execsql
+			fi
+			if [ "$defi". = "src". ] ; then 
+			    buildsrc=enabled ; #echo execsql: $execsql
+			fi
+			if [ "$defi". = "cfg". ] ; then 
+			    cfg=enabled ; #echo cfg: $cfg
+			fi
+			if [ "$defi". = "sql". ] ; then 
+			    sql=enabled ; #echo sql: $sql
+			fi
+		    done
+		    shift;;
+	--project)  shift; project="$project $1" ; shift;;
+	--relation) shift; relation="$1"; shift;;
+	--build)    _project_build "$project" "$relation" "$deploy" "$execsql" "$buildsrc" "$cfg" "$sql"; 
+		    shift;;
 	--table)    shift; TEMPLATE=$1; TABLE=$1; LOCATION=$1; shift;;
 	--pkey)	    shift; PKEY=$1; shift;;
 	--fields)   shift; FIELDS=$1; shift ;;
