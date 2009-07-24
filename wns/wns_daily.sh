@@ -150,29 +150,6 @@ function __tar2nas {
     cmd /c "xcopy $src_d $dst_d /A /E /H"
 }
 
-#function __tar2bi {
-
-#    local base="../WNS_RTF/產業新聞"
-#    #TODAY='20090307'
-#    local year=`expr substr $TODAY 1 4`
-#    local month=$(expr `expr substr $TODAY 5 2` + 0 )
-#    local day=$(expr `expr substr $TODAY 7 2` + 0 )
-#    local day_d="$month""月""$day""日"
-#    local today_d="$year""年產業新聞報"/"$year""年"$month"月"/$day_d
-#    local source="$base"/"$year""年產業新聞報"/"$year""年"$month"月"/$day_d
-#    set +e
-#    src_d="`cygpath -w $source`"
-#    dst_d=`cygpath -w "$NAS_BASE/WNS_RTF-200902/產業新聞/$today_d" `
-#    echo $source
-#    echo $src_d
-#    echo $dst_d
-#    rm -rf "$dst_d"
-#    mkdir -p "$dst_d"
-#    echo cmd /c "xcopy $src_d $dst_d /A /E /H"
-#    cmd /c "xcopy $src_d $dst_d /A /E /H"
-#    set -e
-#}
-
 function __tar2bi {
 
     #TODAY='20090307'

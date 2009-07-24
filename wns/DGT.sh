@@ -2,7 +2,7 @@
 fetch_news_report() {
     
     _logging "$FUNCNAME()" \
-	    "_NEWS_LIST_URL: $_NEWS_LIST_URL , _NEWS_LIST_RESULT: $_NEWS_LIST_RESULT, _COOKIE_JAR: $_COOKIE_JAR"
+	    "_NEWS_LIST_URL: $_NEWS_LIST_URL , _NEWS_LIST_RESULT: $_NEWS_LIST_RESULT, _COOKIE_STRING: $_COOKIE_STRING"
 
     curl $VERBOSE -D ./wns_log/DGT_NEWS_LIST.header  --cookie "$_COOKIE_STRING" \
 	   --output  $_NEWS_LIST_RESULT $_NEWS_LIST_URL
@@ -59,7 +59,8 @@ function login_to_DGT() {
     DGT_LOGIN_HEADER=$WNS_LOG/DGT_LOGIN.header
     DGT_LOGIN_RESULT=$WNS_LOG/DGT_LOGIN.result
 
-    LOGIN_STRING="fromurl=login&ID=$DGT_USR_ID&Password=$DGT_USR_PWD&MyID=$DGT_MYID&MyPwd=$DGT_PWD"
+    #LOGIN_STRING="fromurl=login&ID=$DGT_USR_ID&Password=$DGT_USR_PWD&MyID=$DGT_MYID&MyPwd=$DGT_PWD"
+    LOGIN_STRING="fromurl=login&checkid=$DGT_MYID&checkpwd=$DGT_PWD"
 
     _logging "$FUNCNAME(): LOGIN TO CHECK SITE,  LOGIN_URL: $DGT_LOGIN_URL." \
 	     "Post string: $LOGIN_STRING, _LOGIN_HEADER: $DGT_LOGIN_HEADER, _LOGIN_RESULT: $DGT_LOGIN_RESULT"
@@ -88,7 +89,10 @@ function setting_DGT() {
     DGT_LOGIN_POST_HEADER=$WNS_LOG/DGT_LOGIN_POST.header
     DGT_LOGIN_POST_RESULT=$WNS_LOG/DGT_LOGIN_POST.result
 
-    DGT_LOGOUT_URL="$DGT_URL/tw/lgn/logout.asp?tourl=/tw/dt/dtpage_cold.asp?"
+    #DGT_LOGOUT_URL="$DGT_URL/tw/lgn/logout.asp?tourl=/tw/dt/dtpage_cold.asp?"
+    DGT_LOGOUT_URL="$DGT_URL/tw/lgn/logout.asp?tourl=/tw/default.asp?"
+#http://www.digitimes.com.tw/tw/lgn/logout.asp?tourl=/tw/dt/dtpage_cold.asp?
+#http://www.digitimes.com.tw/tw/lgn/logout.asp?tourl=/tw/default.asp?
 
     DGT_LOGOUT_RESULT=$WNS_LOG/DGT_LOGOUT.result
 
@@ -124,7 +128,8 @@ DGT() {
 	login_to_DGT
  
 	_COOKIE_STRING="`cookie_string $DGT_LOGIN_HEADER`"
-	#echo COOKIE_STRING: $_COOKIE_STRING
+	echo COOKIE_STRING: $_COOKIE_STRING
+	echo $_COOKIE_STRING > $WNS_LOG/DGT_COOKIE_STRING
     fi
     #fetch_news_report()
     if [ $DEBUG -lt 500 ] ; then    
@@ -147,7 +152,8 @@ DGT() {
     #logout.
     if [ $DEBUG -lt 500 ] ; then    
 	_logging 'PHASE V: LOGOUT'
-	logout_from_SITE "$_COOKIE_STRING"
+	#logout_from_SITE "$_COOKIE_STRING"
+	logout_from_SITE "$_COOKIE_STRING" "get"
     fi
     #Transfer news data to text
     if [ $DEBUG -lt 800 ] ; then    

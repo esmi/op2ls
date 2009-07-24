@@ -7,7 +7,7 @@ cookie_string() {
 
     cat $1 | \
 	grep -i Set-Cookie | \
-	sed -e 's/^Set-Cookie: //g' -e 's/;.*$/;/g' | \
+	sed -e 's/^Set-Cookie: //g' -e 's/;.*$/;/g' -e '/=;$/d' | \
 	tr '\n' ' ' | \
 	sed 's/; $//g'
 }
@@ -273,14 +273,20 @@ function logout_from_SITE() {
 	__the_cookie_string="$1"
     fi
 
+    if [ "$2". == "". ] ; then
+	__method="GET"
+    else
+	__method="get"
+    fi
+
     _logging "Function -> $FUNCNAME()"  \
 	"_LOGOUT_URL: $_LOGOUT_URL , _LOGOUT_RESULT: $_LOGOUT_RESULT, __the_cookie_string: $__the_cookie_string"
 
     #curl $VERBOSE -b $_COOKIE_JAR \
     #	    -X GET $_LOGOUT_URL	--output $_LOGOUT_RESULT 
 
-    curl $VERBOSE -cookie "$__the_cookie_string" \
-	    -X GET $_LOGOUT_URL	--output $_LOGOUT_RESULT 
+    curl $VERBOSE --cookie "$__the_cookie_string" \
+	    -X "$__method" $_LOGOUT_URL	--output $_LOGOUT_RESULT 
 }
 
 
@@ -836,7 +842,6 @@ __show_help() {
 		    --move-folder: according fldr-report move article to tag folder.
 		    --create-tag-tab: output tags table to STDOUT from clipboard.
 		    --create-folder-tab: output folder table to STDOUT from clipboard.
-
 		    --help: show this message.;	    --version: show version.
 		    SITE: --TPG | --DGT | --TCT | --UDN | --EET | --EDG | --IEK | --MTR | --PCB
 		    REF:    seq exampe: 135, 1-5, 12345, 1-9, 0-9, -- ; '--' is all seq.
