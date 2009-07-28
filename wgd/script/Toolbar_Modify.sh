@@ -12,6 +12,20 @@ cat <<-EOF
                 <%=objKey.ReadResString("ADD",Session("s_Language"))%></span>&nbsp;&nbsp;&nbsp;
             </td>
         <%end if%>
+EOF
+if [ "$DATA_IS_IMPORTED". = "TRUE". ] ; then
+cat <<-EOF
+        <%if aryPerm(2) = true then %>
+            <td nowrap><span class='clsHref' language='jscript' id='nv_Save'
+                onmouseover='this.className="clsHrefOver";' onmouseout='this.className="clsHref";'
+                title='<%=objKey.ReadResString("SAVE_TITLE",Session("s_Language"))%>'>
+                <img src='/GDCRM/images/sys_tool_Save.gif' align='absmiddle' border='0'>
+                <%=objKey.ReadResString("SAVE",Session("s_Language"))%></span>&nbsp;&nbsp;&nbsp;
+            </td>
+        <%end if%>
+EOF
+else
+cat <<-EOF
         <%if aryPerm(2) = true then %>
             <td nowrap><span onclick='Save();' class='clsHref' language='jscript' id='nv_Save'
                 onmouseover='this.className="clsHrefOver";' onmouseout='this.className="clsHref";'
@@ -20,6 +34,9 @@ cat <<-EOF
                 <%=objKey.ReadResString("SAVE",Session("s_Language"))%></span>&nbsp;&nbsp;&nbsp;
             </td>
         <%end if%>
+EOF
+fi
+cat <<-EOF	
         <%if aryPerm(3) = true then %>
             <td nowrap><span onclick='Delete();' class='clsHref' language='jscript'
                 onmouseover='this.className="clsHrefOver";' onmouseout='this.className="clsHref";'

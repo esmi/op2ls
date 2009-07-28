@@ -358,8 +358,12 @@ after_load_data() {
 cat <<-EOF
 function AfterLoadData() {
     //Update Attachment Icon
+EOF
+if [ "$IS_ATTACH". = "TRUE". ]; then
+cat <<-EOF
     sys_ChangeAttachToolIcon();
 EOF
+fi
 if [ ! "$TABCOUNT". = "0". ] ; then
 cat <<-EOF
     sys_SwitchTab(g_intCurrentTab);

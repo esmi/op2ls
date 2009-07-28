@@ -74,7 +74,21 @@ if IsArray(aryPerm) = false then
     strErrMsg = objKey.ReadResString("CAN_NOT_FIND_USERS_PERMISSION",Session("s_Language"),Session("s_EmplID"),strProgID)
     call sys_ShowErrorHtml(strErrMsg,strProgDescription,"")
 end if
+EOF
 
+if [ "$FILE_TYPE". = "RELATED". ]; then
+    if [ "$PRG_TYPE". = "MAIN". ]; then
+	if [ "$DATA_IS_IMPORTED". = "TRUE". ]; then
+cat <<-EOF
+'一律不准異動資料
+aryPerm(1)=False
+aryPerm(2)=False
+aryPerm(3)=False
+EOF
+	fi
+    fi
+fi    
+cat <<-EOF
 '********************************************************************************************************************
 '檢查使用者是否有執行的權限
 '********************************************************************************************************************
