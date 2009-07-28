@@ -264,7 +264,7 @@ _ws_template_savemodify
 _ws_template_savenew
 _ws_template_importdata
 _template_ws_getreportdata
-_template_sql
+#_template_sql
 }
 _deploy_script() {
 local __TEMPLATE_DEST_PATH=$GD_PRD_PATH/"$TEMPLATE"
@@ -396,51 +396,46 @@ _project_build() {
 	    fi
 	    if [ "$BUILD_SQL". == "enabled". ] ; then
 		for tablename in `echo $RELATION` ; do
-		    echo "#template --cfg cfg/$tablename.cfg --template-sql"
-		    template --cfg cfg/$tablename.cfg --template-sql
+		    if [ -e cfg/$tablename.cfg ] ; then
+			echo "#template --cfg cfg/$tablename.cfg --template-sql"
+			template --cfg cfg/$tablename.cfg --template-sql
+		    else
+			echo Warning...cfg/$tablename.cfg not exist, building abort.
+		    fi
 		done
 	    fi
 	    if [ "$BUILD_SRC". == "enabled". ] ; then
 		for tablename in `echo $RELATION` ; do
-		    echo "#template --cfg cfg/$tablename.cfg --all"
-		    template --cfg cfg/$tablename.cfg --all
+		    if [ -e cfg/$tablename.cfg ] ; then
+			echo "#template --cfg cfg/$tablename.cfg --all"
+			template --cfg cfg/$tablename.cfg --all
+		    else
+			echo Warning...cfg/$tablename.cfg not exist, building abort.
+		    fi
 		done
 	    fi
 	    if [ "$DEPLOY". == "enabled". ] ; then
 		for tablename in `echo $RELATION` ; do
-		    echo "# deploy Project:$PROJECT, Table: $tablename source code to target host."
-		    echo template --cfg cfg/$tablename.cfg --deploy-script 
-		    template --cfg cfg/$tablename.cfg --deploy-script 
+		    if [ -e cfg/$tablename.cfg ] ; then
+			echo "# deploy Project:$PROJECT, Table: $tablename source code to target host."
+			echo template --cfg cfg/$tablename.cfg --deploy-script 
+			template --cfg cfg/$tablename.cfg --deploy-script 
+		    else
+			echo Warning...cfg/$tablename.cfg not exist, building abort.
+		    fi
 		done
 	    fi
 	    if [ "$EXECSQL". == "enabled". ] ; then
 		for tablename in `echo $RELATION` ; do
-		    echo "# exec Project:$PROJECT, Table: $tablename sql code to target dbhost."
-		    echo template --cfg cfg/$tablename.cfg --exec-sql
-		    template --cfg cfg/$tablename.cfg --exec-sql
+		    if [ -e cfg/$tablename.cfg ] ; then
+			echo "# exec Project:$PROJECT, Table: $tablename sql code to target dbhost."
+			echo template --cfg cfg/$tablename.cfg --exec-sql
+			template --cfg cfg/$tablename.cfg --exec-sql
+		    else
+			echo Warning...cfg/$tablename.cfg not exist, building abort.
+		    fi
 		done
 	    fi
-##	    for tablename in `echo $RELATION` ; do
-#		if [ "$BUILD_CFG". == "enabled". ] ; then
-#		    echo "#Create $tablename cfg file and script..."
-#		    echo "#template --schema-file $PROJECT.prj.xls --wks-name $table_name --create-cfg > cfg/$tablename.cfg"
-#		    template --schema-file $PROJECT.prj.xls --wks-name $tablename --create-cfg > cfg/$tablename.cfg
-#		fi
-#		if [ "$BUILD_SRC". == "enabled". ] ; then
-#		    echo "#template --cfg cfg/$tablename.cfg --all"
-#		    template --cfg cfg/$tablename.cfg --all
-#		fi
-#		if [ "$DEPLOY". == "enabled". ] ; then
-#		    echo "# deploy Project:$PROJECT, Table: $tablename source code to target host."
-#		    echo template --cfg cfg/$tablename.cfg --deploy-script 
-#		    template --cfg cfg/$tablename.cfg --deploy-script 
-#		fi
-#		if [ "$EXECSQL". == "enabled". ] ; then
-#		    echo "# exec Project:$PROJECT, Table: $tablename sql code to target dbhost."
-#		    echo template --cfg cfg/$tablename.cfg --exec-sql
-#		    template --cfg cfg/$tablename.cfg --exec-sql
-#		fi
-#	    done
 	fi
 	echo "" ; n=$(expr $n + 1)
     done
@@ -647,5 +642,4 @@ while true ; do
         *)              __show_help;   break ;;
     esac
 done
-
 
