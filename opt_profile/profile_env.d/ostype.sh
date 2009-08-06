@@ -18,9 +18,6 @@ else
    TRANSPATH="echo "
    POSIXPATH="echo "
    
-#   PATH=/sbin:/usr/sbin:/usr/local/sbin:$PATH
-   export PATH
-
    desktop="$HOME/Desktop"
    export desktop
    

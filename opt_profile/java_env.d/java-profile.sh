@@ -57,7 +57,9 @@ APPS=$JAVA_APPS
 #export ANT_HOME JAVA_HOME CATALINA_HOME
 export JAVA_APPS JAPPS
 
-PATH=$PATH:`$POSIXPATH $JAVA_HOME/bin`
+if [ "$PROFILE_PASSED". == "". ] ; then
+    PATH=$PATH:`$POSIXPATH $JAVA_HOME/bin`
+fi
 
 # JAVA RELATIVE ENVIRONMENT...
 alias java='java -classpath "$WIN_CLASSPATH"'
