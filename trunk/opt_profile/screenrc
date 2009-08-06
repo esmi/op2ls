@@ -22,17 +22,37 @@ bind } history
 
 term xterm-color
 
-chdir /usr/src/opt/wns/RUN/script
-screen -t WNS1 /bin/bash --rcfile ~/.profile
-chdir /usr/src/opt/wns/RUN/script
-screen -t Wlnews /bin/bash --rcfile ~/.profile
+#WNS
+#chdir /usr/src/opt/wns/RUN/script
+#screen -t WNS1 /bin/bash --rcfile ~/.profile
+#chdir /usr/src/opt/wns/RUN/script
+#screen -t Wlnews /bin/bash --rcfile ~/.profile
 
+#chdir $HOME
+#screen -t HOME /bin/bash --rcfile ~/.profile
+#WGD
+chdir /usr/src/opt/wgd/doc/spec
+screen -t SPC /bin/bash --rcfile ~/.profile
+
+chdir /usr/src/opt/wgd/template
+screen -t TPL1 /bin/bash --rcfile ~/.profile
+
+chdir /usr/src/opt/wgd/template
+screen -t TPL2 /bin/bash --rcfile ~/.profile
+
+chdir /usr/src/opt/wgd/HSCode
+screen -t HSC /bin/bash --rcfile ~/.profile
+
+#----------------------------------------------------
+#QEMU
 chdir /usr/src/qemu/ipcop
 screen -t QEMU /bin/bash  --rcfile ~/.profile
 
+#OP2LS
 chdir /usr/src/opt/op2ls
 screen -t OP2LS /bin/bash --rcfile ~/.profile
 
+#OPT
 chdir /usr/src/opt
 screen -t OPT /bin/bash --rcfile ~/.profile
 
@@ -40,9 +60,17 @@ chdir /usr/src/work
 screen -t WORK /bin/bash --rcfile ~/.profile
 
 chdir $HOME
+#CPAN
 screen cpan
+
+#YDICT
 screen ydict
 
-chdir /usr/src/opt/wgd
-screen -t WGD /bin/bash --rcfile ~/.profile
+#WNS
+chdir /usr/src/opt/wns/script
+screen -t Wlnews /bin/bash --rcfile ~/.profile
+
+#HOME
+chdir $HOME
+screen -t HOME /bin/bash --rcfile ~/.profile
 
