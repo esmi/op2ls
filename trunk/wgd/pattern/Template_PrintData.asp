@@ -1,4 +1,4 @@
-﻿<%
+<%
 Function Sales_PrintData()
     ON ERROR RESUME NEXT
     '==================================

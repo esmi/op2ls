@@ -1,4 +1,4 @@
-﻿<%@Language=Vbscript CodePage=65001%>
+<%@Language=Vbscript CodePage=65001%>
 <%
 Option Explicit
 Response.Buffer=true
@@ -149,7 +149,7 @@ function Init() {               //初始化
     //Setting default focus field.
     document.all['##PKEY_#'].focus();
 
-	document.all['Valid'].value = "Y";
+    //	document.all['Valid'].value = "Y";
 
     //Setting change remind flag
     g_blnChanged= false;

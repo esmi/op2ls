@@ -1,4 +1,4 @@
-﻿<table cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px'>
+<table cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px'>
 <!-- PKEY Field: ##PKEY_# -->
 <tr>
     <td align=right nowrap>

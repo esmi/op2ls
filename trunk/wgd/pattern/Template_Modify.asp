@@ -200,10 +200,10 @@ function BeforeLoadData() {
 }
 
 function AfterLoadData() {
-	//Switch to Current Tab
+    //Switch to Current Tab
     sys_SwitchTab(g_intCurrentTab);
 
-	//Setting key filed value
+    //Setting key filed value
     document.all['gd_Key'].value = document.all['##PKEY_#'].value;
 
     //Setting default focus field.
@@ -212,7 +212,7 @@ function AfterLoadData() {
     //Setting change remind flag
     g_blnChanged= false;
 	
-	document.all["blkProgTitle"].style.color = "white"
+    document.all["blkProgTitle"].style.color = "white"
 }
 
 function AddNew() {             //新增
