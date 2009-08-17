@@ -1,4 +1,4 @@
-﻿<div class='clsToolbar'>
+<div class='clsToolbar'>
 <table cellspacing=1 cellpadding=1 border=0>
     <tr>
         <%if aryPerm(1) = true then %>
