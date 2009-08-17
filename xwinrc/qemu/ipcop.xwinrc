@@ -1,1 +1,0 @@
-"IPCOP"  exec "cygstart /usr/src/qemu/ipcop/IPCOP.lnk"
