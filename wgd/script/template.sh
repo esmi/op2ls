@@ -101,11 +101,6 @@ _template() {
             > $_output/"$TEMPLATE".asp
 }
 _template_modify() {
-    #cat "$PATTERN"/Template_Modify.asp | \
-    #    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-    #	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-    #	-e "s/##Location_#/$(echo $LOCATION)/g" \
-    #	>  $_output/"$TEMPLATE"_Modify.asp
     echo create  $_output/"$TEMPLATE"_Modify.asp
     source "$INCLUDE"/Template_Modify.sh
     template_modify | 
@@ -267,21 +262,21 @@ _template_ws_getreportdata
 #_template_sql
 }
 _deploy_script() {
-local __TEMPLATE_DEST_PATH=$GD_PRD_PATH/"$TEMPLATE"
-retval=0
+    local __TEMPLATE_DEST_PATH=$GD_PRD_PATH/"$TEMPLATE"
+    retval=0
 
-if [ ! -d $__TEMPLATE_DEST_PATH ] ; then
-    echo Create template scripts path: $__TEMPLATE_DEST_PATH.
-    mkdir -p $__TEMPLATE_DEST_PATH
-    retval=$?
-fi
-if [ -d $__TEMPLATE_DEST_PATH ] ; then
-    echo cp $_output/*.asp $__TEMPLATE_DEST_PATH
-    cp $_output/*.asp $__TEMPLATE_DEST_PATH
-else
-    echo "Target path: $__TEMPLATE_DEST_PATH is not found"
-    echo "Scripts copy failure...."
-fi
+    if [ ! -d $__TEMPLATE_DEST_PATH ] ; then
+	echo Create template scripts path: $__TEMPLATE_DEST_PATH.
+	mkdir -p $__TEMPLATE_DEST_PATH
+	retval=$?
+    fi
+    if [ -d $__TEMPLATE_DEST_PATH ] ; then
+	echo cp $_output/*.asp $__TEMPLATE_DEST_PATH
+	cp $_output/*.asp $__TEMPLATE_DEST_PATH
+    else
+	echo "Target path: $__TEMPLATE_DEST_PATH is not found"
+	echo "Scripts copy failure...."
+    fi
 
 }
 _create_cfg() {
