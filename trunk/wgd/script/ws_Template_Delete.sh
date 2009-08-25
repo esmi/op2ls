@@ -180,7 +180,9 @@ EOF
 ws_delete_related_table() {
 cat <<-EOF
     '**刪除指定的 \$RELATED_TABLE: ${RELATED_TABLE} 資料
-    strSQL = "DELETE ${RELATED_TABLE} " & _
+    '**刪除指定的 \$RELATED_TABLE: $(__related_table) 資料
+    'strSQL = "DELETE ${RELATED_TABLE} " & _
+    strSQL = "DELETE $(__related_table) " & _
 		" WHERE " & _
 			$(modifydata_where_filter) 
 '			" DeptId=N'" & strKeyValue1 & "' AND " & _

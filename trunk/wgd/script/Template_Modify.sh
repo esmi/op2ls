@@ -384,7 +384,8 @@ EOF
 if [ "$PRG_TYPE". = "DBL". ] ; then
 cat <<-EOF
     //Related table. ref: Template_Modify_Layout
-    document.all.${RELATED_TABLE}_Data.src = "/GDCRM/Prog/${RELATED_TABLE}/${RELATED_TABLE}.asp?gd_FI=" +
+    //document.all.${RELATED_TABLE}_Data.src = "/GDCRM/Prog/${RELATED_TABLE}/${RELATED_TABLE}.asp?gd_FI=" +
+    document.all.$(__related_table)_Data.src = "/GDCRM/Prog/$(__related_table)/$(__related_table).asp?gd_FI=" +
     `_multy_key_split2 "$KEY_MULTY"`
 EOF
 fi

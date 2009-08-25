@@ -85,12 +85,13 @@ fi
 
 tailer_modify_layout() {
 if [ "$PRG_TYPE". = "DBL". ] ; then
+    # ${RELATED_TABLE} --> $(__related_table)
 cat <<-EOF
-<!--${RELATED_TABLE}_Data: Related TABLE, tailer_modify_layout(): -->
+<!--$(__related_table)_Data: Related TABLE, tailer_modify_layout(): -->
 <table id='blkTab7' BORDER=1 BORDERCOLOR='green' cellpadding=3 cellspacing=0 border=0 style='margin-left:10px;margin-top:10px;HEIGHT:51%;WIDTH:96%;border-collapse:collapse'>
     <tr>
         <td>
-            <iframe id='${RELATED_TABLE}_Data' frameborder=no style='z-index:999;width:100%;height:100%' src=''>
+            <iframe id='$(__related_table)_Data' frameborder=no style='z-index:999;width:100%;height:100%' src=''>
             </iframe>
         </td>
     </tr>

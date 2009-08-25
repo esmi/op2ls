@@ -94,7 +94,8 @@ done
 if [ "$FILE_TYPE". == "MAIN". ] ; then
     if [ "$PRG_TYPE". == "DBL". ] ; then
 	if [ ! "$RELATED_TABLE". = "". ] ; then
-	    echo -n " ( select count(*) from ${RELATED_TABLE} where $(table_function_filter) ) as cnt"
+	    #echo -n " ( select count(*) from `echo ${RELATED_TABLE}| sed 's|/.*$||g'` where $(table_function_filter) ) as cnt"
+	    echo -n " ( select count(*) from `__related_table` where $(table_function_filter) ) as cnt"
 	fi
     fi
 fi
