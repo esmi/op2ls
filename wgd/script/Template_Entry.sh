@@ -335,12 +335,12 @@ EOF
 
 template_entry_multy_key2() {
     local lastkey="`key_name "$KEY_MULTY" $KEY_COUNT`"
-    #echo 1>&2 "$lastkey"
-    #echo 1>&2 "$RES_MULTY"
+    echo 1>&2 "$lastkey"
+    echo 1>&2 "$RES_MULTY"
     for fd_res in `echo "$RES_MULTY"` ; do
 	fd="`echo $fd_res | sed 's/,.*$//g'`"
 	res="`echo $fd_res | sed 's/^.*,//g'`"
-	#echo 1>&2 "$fd,$res"
+	echo 1>&2 "$fd,$res"
 	tailer="+ "
 	if [ $fd = $lastkey ] ; then 
 	    tailer=";"

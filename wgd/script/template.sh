@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#define target sql parameters for "execsql"
 source cfg/SQL.cfg
 #SQLSRV=
 #SQLUSR=
@@ -51,6 +52,48 @@ else
     INCLUDE="`dirname $_link`"
 fi
 PATTERN=./pattern
+
+
+__related_table() {
+    echo ${RELATED_TABLE}| sed 's|/.*$||g'
+}
+
+__wksheet() {
+    echo ${WKSHEET} | sed 's|/.*$||g'
+}
+
+__is_first_title() {
+    echo $IS_FIRST_TITLE | sed 's|/.*$||g'
+}
+__attach_fields() {
+    echo ${ATTACH_FIELDS} | sed 's|/.*$||g'
+}
+
+__select_fields() {
+
+    local fdn=""
+    local lastfd=$(echo $(__attach_fields) | sed 's/^.*,//g')
+    local tailer=", "
+    #strSQL = "Select ${KEY_MULTY}, $(__attach_fields) from [$(__wksheet)$]"
+    for fd in $(echo $(__attach_fields) | sed 's/,/ /g') ; do
+	if [ $fd = $lastfd ] ; then tailer="" ; fi
+	if [ $fd = $(echo ${KEY_MULTY} | sed "s/^.*$fd.*$/$fd/g") ] ; then
+	    if [ "$ATTACH_CHKKEY". != "". ] ; then
+
+		if [ $fd = $(echo $ATTACH_CHKKEY | sed "s/^.*$fd.*$/$fd/g") ] ; then
+		    echo -n $fd$tailer
+		else
+		    echo -n ""
+		fi
+	    else
+		echo -n $fd$tailer
+	    fi
+	else
+	    echo -n $fd$tailer
+	fi
+    done
+}
+
 key_count() {
     local count=0
     for key_fd in `echo $KEY_MULTY | sed 's/,/ /g'` ; do
@@ -187,17 +230,9 @@ _ws_template_delete() {
 	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
 	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
         > $_output/ws_"$TEMPLATE"_Delete.asp
-#cat "$PATTERN"/ws_Template_Delete.asp | \
-#    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-#	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-#	>  $_output/ws_"$TEMPLATE"_Delete.asp
 }
 _ws_template_modifydata() {
     echo create $_output/ws_"$TEMPLATE"_ModifyData.asp
-#cat "$PATTERN"/ws_Template_ModifyData.asp | \
-#    sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
-#	-e "s/##Template_#/$(echo $TEMPLATE)/g" \
-#	>  $_output/ws_"$TEMPLATE"_ModifyData.asp
     source "$INCLUDE"/ws_Template_ModifyData.sh
     ws_template_modifydata | \
 	sed -e "s/##PKEY_#/$(echo $PKEY)/g" \
@@ -369,7 +404,7 @@ _project_build() {
 
     for PROJECT in `echo $PROJECTS` ; do
 
-	strReturn="`template --schema-file $PROJECT.prj.xls`"
+	strReturn="`./template --schema-file $PROJECT.prj.xls`"
 
 	if [ ! "$strReturn". = "". ] ; then
 	    echo project: $PROJECT schema file not found.
@@ -477,7 +512,8 @@ example:
     template --cfg cfg/STKITems.cfg --deploy-script	## deploy scripts to target path.
 build example:
     template --project MsgImport  --relation "MsgImport MsgStock" --define "src execsql deploy" --build
-    template --project "prja prjb" --relation "rela1 rela2,relb1 relb2" --define "cfg src sql deploy execsql" --build
+    template --project "prja prjb" --relation "rla1 rla2,rlb1 rlb2" --define "cfg src sql deploy execsql" --build
+default action(project/*.prj.sh): GD_ACTIONS="cfg sql src execsql deploy"
 EOF
 }
 
