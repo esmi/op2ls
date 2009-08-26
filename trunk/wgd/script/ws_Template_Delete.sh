@@ -1,3 +1,4 @@
+
 ws_delete_header() {
 cat <<-EOF
 <%@Language=Vbscript CodePage=65001%>
@@ -32,8 +33,6 @@ strKeyFieldName = "${PKEY}"
 EOF
 fi
 cat <<-EOF
-//strProgTableName = "HSImport"
-//strKeyFieldName = "DeptId,PeriodId,WhrsId"
 
 '**** 讀取使用者對於本程式的使用權限
 aryPerm = sys_GetProgramPermission(strProgID,Session("s_EmplID"))
@@ -68,12 +67,11 @@ cat <<-EOF
 dim strSQL, rst1, strKey, strErrMsg
 
 strKey = replace(Request("gd_Key"),"'","''")
+EOF
 
+if [ "$KEY_MULTY". != "". ] ; then
+cat <<-EOF
 Dim $(strKeyValue_list $KEYMULTY_CNT)
-'Dim strKeyFieldName1, strKeyFieldName2, strKeyFieldName3
-'strKeyFieldName1="DeptId"
-'strKeyFieldName2="PeriodId"
-'strKeyFieldName3="WhrsId"
 
 strKey = trim(Request("gd_Key"))
 
@@ -82,16 +80,12 @@ strKey = trim(Request("gd_Key"))
 
 if instr(1,strKey,",") > 0 then
     $(strKeyValue_assign)
-    'strKeyValue1 = split(strKey,",")(0) 
-    'strKeyValue2 = split(strKey,",")(1) 
-    'strKeyValue3 = split(strKey,",")(2) 
 end if
-
+EOF
+fi
+cat <<-EOF
 strSQL = "SELECT * FROM " & strProgTableName & _
-	" WHERE " & $(modifydata_where_filter)
-'	 " WHERE "   & strKeyFieldName1 & " = N'" & strKeyValue1 & "' AND" & _
-'		 " " & strKeyFieldName2 & " = N'" & strKeyValue2 & "' AND" & _
-'		 " " & strKeyFieldName3 & " = N'" & strKeyValue3 & "'"
+         " WHERE " & $(modifydata_where_filter)
 
 set rst1 = objPublic.CreateRecordset(strSQL,Application("a_CRMConnect"))
 EOF
@@ -142,6 +136,7 @@ if rst1.RecordCount = 1 then
     cnnDB.BeginTrans
 EOF
 }
+
 ws_delete_DocServerAttachments() {
 cat <<-EOF
     '**刪除指定的 DocServerAttachments 資料
@@ -196,12 +191,9 @@ EOF
 ws_delete_main_table() {
 cat <<-EOF
     '**刪除指定的 MAIN TABLE: ${TEMPLATE} 資料
-    strSQL = "DELETE ${TEMPLATE} " & _
-		" WHERE " & _
-			$(modifydata_where_filter) 
-'			" DeptId=N'" & strKeyValue1 & "' AND " & _
-'			" PeriodId=N'" & strKeyValue2 & "' AND " & _
-'			" WhrsId=N'" & strKeyValue3 & "'"
+    strSQL = "DELETE " & strProgTableName  & _
+             " WHERE " & _
+                         $(modifydata_where_filter) 
     cnnDB.Execute strSQL
     if err.number <> 0 then call DumpDeleteError("${TEMPLATE}")
 EOF
@@ -249,9 +241,15 @@ EOF
 
 _ws_delete_process() {
 ws_delete_begin
-ws_delete_DocServerAttachments
-ws_delete_attachments
-ws_delete_related_table
+
+if [ "$IS_ATTACH". = "TRUE". ] ; then
+    ws_delete_DocServerAttachments
+    ws_delete_attachments
+fi
+
+if [ "$RELATED_TABLE". != "". ] ; then
+    ws_delete_related_table
+fi
 ws_delete_main_table
 ws_delete_end
 }

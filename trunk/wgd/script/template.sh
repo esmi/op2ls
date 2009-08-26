@@ -109,6 +109,7 @@ modifydata_where_filter() {
 #    rst1.Filter = "DeptId = '" & strKeyValue1 & "' AND PeriodId = '" & strKeyValue2 & "'"
 #    rst1.Filter = "DeptId = '"   & strKeyValue1 & "'" & " AND " & _
 #		  "PeriodId = '" & strKeyValue2 & "'"
+if [  "$KEY_TYPE". = "MULTY_KEY" ] ; then
     for i in `seq $KEYMULTY_CNT` ; do
 	if [ "$i". == "$KEYMULTY_CNT". ] ; then
 	    tailer=''
@@ -118,6 +119,12 @@ modifydata_where_filter() {
 	echo  -n ' "'`echo $KEY_MULTY | gawk -F ',' "{print $(echo '$'$(echo $i))}"`" = N'\""" & strKeyValue"$i" & \"'\""  \
 		$tailer
     done
+else
+#' strKeyFieldName & " = N'" & strKey & "'"  
+    echo -n strKeyFieldName '&' \" = N\'\" \& strKey \& \"\'\"
+
+
+fi    
 }
 strKeyValue_assign() {
     for i in `seq $KEYMULTY_CNT` ; do
@@ -194,6 +201,9 @@ _toolbar_list() {
     if [ "$IS_ATTACH". = "TRUE". ] ; then
 	_TBLIST_SEARCHATTACH_STYLE=""
     fi
+    #if [ "$FILE_TYPE". = "SINGLE". ] ; then
+	#_TBLIST_ADDNEW_STYLE=""
+    #fi
     #echo '$_TBLIST_SEARCHATTACH_STYLE: '$_TBLIST_SEARCHATTACH_STYLE
     echo create $_output/Toolbar_List.asp
     source "$INCLUDE"/Toolbar_List.sh
