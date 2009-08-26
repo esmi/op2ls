@@ -32,6 +32,9 @@ Session.codepage=65001
 <!--#include virtual='/GDCRM/library/sys_GenStatusBarModify_S.asp' -->
 <!--#include virtual='/GDCRM/library/sys_CheckProgramPermission_S.asp' -->
 
+<%'**** Server-Side 系統特殊公用函數 %>
+<!--#include virtual='/GDCRM/library/sys_GenModifierTablet_S.asp' -->
+<!--#include virtual='/GDCRM/library/sys_GenPermissionTablet_Empl_S.asp' -->
 <%
 '*******************************************************************
 '定義程式參數
@@ -70,13 +73,34 @@ strKey= Trim(Request("gd_Key")) & ""
 dim aryPerm, strProgDescription, strErrMsg, i
 '讀取程式名稱
 strProgDescription = "(" & strProgID & ") " & sys_GetProgramDescription(strProgID,Session("s_Language"))
+EOF
 
+if [ $TABCOUNT. != "". ] ; then
+    if [ $TABCOUNT. != 0 ] ; then
+cat <<-EOF	
+'*******************************************************************
+'定義起始標籤頁
+'*******************************************************************
+dim intStartTab
+intStartTab = Trim(Request("gd_Tab"))
+if intStartTab = "" then
+    intStartTab = 1
+end If
+EOF
+    fi
+fi
+
+if [ "$IS_ATTACH". = "TRUE". ] ; then
+cat <<-EOF
 '*******************************************************************
 '定義附件資料表名稱
 '*******************************************************************
 dim strAttachTableName
 strAttachTableName = "${TEMPLATE}"
+EOF
+fi
 
+cat <<-EOF
 '*******************************************************************
 '程式權限檢查
 '*******************************************************************
@@ -266,6 +290,9 @@ function Exit() {         //離開
         //Do nothing
     }
 }
+EOF
+if [ "$IS_ATTACH" = "TRUE". ] ; then
+cat <<-EOF
 function ShowAttach() {
     sys_ShowAttachment("${TEMPLATE}",g_strProgID);
 }
@@ -273,7 +300,10 @@ function ShowAttach() {
 function SearchAttach() {
     sys_SearchAttachment("${TEMPLATE}");
 }
+EOF
+fi
 
+cat <<-EOF
 function BeforeUnload() {
     if (g_blnChanged == true && g_blnChangeRemind==true) {
         window.event.returnValue = g_msgDataWasModifiedButNotSave;
@@ -486,11 +516,11 @@ EOF
 #echo $KEY_COUNT
 
 template_modify() {
-KEY_COUNT="`key_count`"
-template_modify_header
-after_load_data
-import_data
-template_modify_tailer
+    KEY_COUNT="`key_count`"
+    template_modify_header
+    after_load_data
+    import_data
+    template_modify_tailer
 }
 
 #template_modify
