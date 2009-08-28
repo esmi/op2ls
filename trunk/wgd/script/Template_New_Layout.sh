@@ -48,7 +48,7 @@ template_new_layout() {
 
     #header_new_layout | sed "s/##PKEY_#/$(echo $PKEY)/g"
     header_new_layout 
-    header_pkey_layout
+    #header_pkey_layout
 
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')

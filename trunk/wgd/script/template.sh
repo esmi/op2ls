@@ -109,7 +109,8 @@ modifydata_where_filter() {
 #    rst1.Filter = "DeptId = '" & strKeyValue1 & "' AND PeriodId = '" & strKeyValue2 & "'"
 #    rst1.Filter = "DeptId = '"   & strKeyValue1 & "'" & " AND " & _
 #		  "PeriodId = '" & strKeyValue2 & "'"
-if [  "$KEY_TYPE". = "MULTY_KEY" ] ; then
+echo 1>&2 "KEY_TYPE: " $KEY_TYPE
+if [  "$KEY_TYPE". = "MULTY_KEY". ] ; then
     for i in `seq $KEYMULTY_CNT` ; do
 	if [ "$i". == "$KEYMULTY_CNT". ] ; then
 	    tailer=''
@@ -120,7 +121,7 @@ if [  "$KEY_TYPE". = "MULTY_KEY" ] ; then
 		$tailer
     done
 else
-#' strKeyFieldName & " = N'" & strKey & "'"  
+    #' strKeyFieldName & " = N'" & strKey & "'"  
     echo -n strKeyFieldName '&' \" = N\'\" \& strKey \& \"\'\"
 
 
@@ -283,8 +284,13 @@ _template_sql() {
     echo create sql script: $script
     template_sql > $script
 }
+_template_menusql() {
+    source "$INCLUDE"/Template_SQL.sh
+    local script=$_output/"$TEMPLATE".menu.sql
+    echo create sql script: $script
+    template_menusql > $script
+}
 _template_all() {
-
 _template
 _template_modify
 _template_modify_layout
@@ -394,23 +400,31 @@ _exec_sql() {
 cat <<-EOF
 # Execute "$_output/$TEMPLATE.sql" to server: $SQLSRV, database: $SQLDB
 # to create "$TEMPLATE" table, "fn_DATA_$TEMPLATE" function
-# add data to "Program" and "ProgramField" tables.
-# convert sql file to big5 encode for OSQL running.
-cat "$_output/$TEMPLATE.sql" | iconv -f UTF-8 -t big5 > "$_output/$TEMPLATE.big5.sql"
-osql -S $SQLSRV  -U $SQLUSR -P $SQLPWD -d $SQLDB -i "$_output/$TEMPLATE.big5.sql" | piconv -f big5 -t $LANG
+sqlcmd -S $SQLSRV -U $SQLUSR -d $SQLDB \
+    -f 65001 -i "$_output/$TEMPLATE.sql" 2>&1 | piconv -f big5 -t utf-8
 EOF
-#cat "$_output/$TEMPLATE.sql" | iconv -f UTF-8 -t UCS-2LE > "$_output/$TEMPLATE.ucs2.sql"
-cat "$_output/$TEMPLATE.sql" | piconv -f UTF-8 -t big5 > "$_output/$TEMPLATE.big5.sql"
-osql -S $SQLSRV  -U $SQLUSR -P $SQLPWD -d $SQLDB -i "$_output/$TEMPLATE.big5.sql" | piconv -f big5 -t $LANG
-
+sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB \
+    -f 65001 -i "$_output/$TEMPLATE.sql" 2>&1 | piconv -f big5 -t utf-8
 }
+
+_exec_menusql() {
+
+cat <<-EOF
+# Execute "$_output/$TEMPLATE.menu.sql" to server: $SQLSRV, database: $SQLDB to create "$TEMPLATE" menu.
+# add data to "Program" and "ProgramField" tables.
+sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB -f 65001 -i "$_output/$TEMPLATE.menu.sql" 2>&1 | piconv -f big5 -t utf-8
+EOF
+sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB \
+    -f 65001 -i "$_output/$TEMPLATE.menu.sql" 2>&1 | piconv -f big5 -t utf-8
+}
+
 
 _project_build() {
 
     local PROJECTS="$1";    local RELATIONS="$2";   local DEPLOY="$3";	local EXECSQL="$4"; local BUILD_SRC="$5";
-    local BUILD_CFG="$6";   local BUILD_SQL="$7";   
+    local BUILD_CFG="$6";   local BUILD_SQL="$7";   local EXECMENU="$8";	local BUILD_MENU="$9";
     local tablename="";	    local PRJECT="";	    local RELATION="";  local n=1;	    local strReturn=""
-    echo "BUILD_SRC: $BUILD_SRC, DEPLOY: $DEPLOY, EXECSQL: $EXECSQL"
+    echo "BUILD_SRC: $BUILD_SRC, BUILD_SQL: $BUILD_SQL, BUILD_MENU: $BUILD_MENU, DEPLOY: $DEPLOY, EXECSQL: $EXECSQL, EXECMENU: $EXECMENU"
 
     for PROJECT in `echo $PROJECTS` ; do
 
@@ -444,6 +458,16 @@ _project_build() {
 		    fi
 		done
 	    fi
+	    if [ "$BUILD_MENU". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    if [ -e cfg/$tablename.cfg ] ; then
+			echo "#template --cfg cfg/$tablename.cfg --template-menusql"
+			template --cfg cfg/$tablename.cfg --template-menusql
+		    else
+			echo Warning...cfg/$tablename.cfg not exist, building abort.
+		    fi
+		done
+	    fi
 	    if [ "$BUILD_SRC". == "enabled". ] ; then
 		for tablename in `echo $RELATION` ; do
 		    if [ -e cfg/$tablename.cfg ] ; then
@@ -471,6 +495,17 @@ _project_build() {
 			echo "# exec Project:$PROJECT, Table: $tablename sql code to target dbhost."
 			echo template --cfg cfg/$tablename.cfg --exec-sql
 			template --cfg cfg/$tablename.cfg --exec-sql
+		    else
+			echo Warning...cfg/$tablename.cfg not exist, building abort.
+		    fi
+		done
+	    fi
+	    if [ "$EXECMENU". == "enabled". ] ; then
+		for tablename in `echo $RELATION` ; do
+		    if [ -e cfg/$tablename.cfg ] ; then
+			echo "# exec Project:$PROJECT, Table: $tablename menusql code to target dbhost."
+			echo template --cfg cfg/$tablename.cfg --exec-menusql
+			template --cfg cfg/$tablename.cfg --exec-menusql
 		    else
 			echo Warning...cfg/$tablename.cfg not exist, building abort.
 		    fi
@@ -523,7 +558,7 @@ example:
 build example:
     template --project MsgImport  --relation "MsgImport MsgStock" --define "src execsql deploy" --build
     template --project "prja prjb" --relation "rla1 rla2,rlb1 rlb2" --define "cfg src sql deploy execsql" --build
-default action(project/*.prj.sh): GD_ACTIONS="cfg sql src execsql deploy"
+default action(project/*.prj.sh): GD_ACTIONS="cfg sql menusql src execsql deploy execmenu"
 EOF
 }
 
@@ -537,8 +572,9 @@ toolbar-modify,template-toolbar-new,template-script-savenew,template-ws-getrepor
 template-sql"
 WS_OP="ws-template-modifydata,ws-template-importdata,ws-template-delete,ws-template-data"
 BUILD_OP="build,project:,relation:,define:"
+MENU_OP="template-menusql,exec-menusql"
 #echo $GEN_OP
-ALL_OP="$GEN_OP,$WS_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG,$BUILD_OP"
+ALL_OP="$GEN_OP,$WS_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG,$BUILD_OP,$MENU_OP"
 orig_command="$@"
 OPT=`getopt -o "" --longoptions=$ALL_OP -- "$@"`
 #orig_command="$*"
@@ -554,8 +590,10 @@ if [  $# -eq 1 ] ; then __show_help; fi
 
 deploy=disable
 execsql=disable
+execmenu=disable
 buildsrc=disable
 sql=disable
+menusql=disable
 cfg=disable
 project=""
 relation=""
@@ -571,6 +609,9 @@ while true ; do
 			if [ "$defi". = "execsql". ] ; then 
 			    execsql=enabled ; #echo execsql: $execsql
 			fi
+			if [ "$defi". = "execmenu". ] ; then 
+			    execmenu=enabled ; #echo execsql: $execsql
+			fi
 			if [ "$defi". = "src". ] ; then 
 			    buildsrc=enabled ; #echo execsql: $execsql
 			fi
@@ -580,11 +621,15 @@ while true ; do
 			if [ "$defi". = "sql". ] ; then 
 			    sql=enabled ; #echo sql: $sql
 			fi
+			if [ "$defi". = "menusql". ] ; then 
+			    menusql=enabled ; #echo sql: $sql
+			fi
 		    done
 		    shift;;
 	--project)  shift; project="$project $1" ; shift;;
 	--relation) shift; relation="$1"; shift;;
-	--build)    _project_build "$project" "$relation" "$deploy" "$execsql" "$buildsrc" "$cfg" "$sql"; 
+	--build)    _project_build  "$project" "$relation" "$deploy" "$execsql" "$buildsrc" \
+				    "$cfg" "$sql" "$execmenu" "$menusql"; 
 		    shift;;
 	--table)    shift; TEMPLATE=$1; TABLE=$1; LOCATION=$1; shift;;
 	--pkey)	    shift; PKEY=$1; shift;;
@@ -603,10 +648,17 @@ while true ; do
 			    _output=$OUTPUT
 			    mkdir -p $_output
 			fi 
+
+			#PRG_NAME="Eng/zh_TW/zh_CN"
+			if [ "$PRG_NAME". = "". ] ; then    PRG_NAME="$TEMPLATE/$TEMPLATE/$TEMPLATE"; fi
+			if [ "$PRG_CATE". = "". ] ; then    PRG_CATE="0051"; fi
+			if [ "$PRG_MODULE". = "". ] ; then  PRG_MODULE="HSS"; fi
 		    else
 			echo cfg file not exist.
 		    fi
 		    shift ;;
+	--menu-execsql)
+		    ;;
 	--wks-name) shift;
 		    #echo ttt:$1
 		    if [ ! "$1". = "". ] ;then
@@ -658,6 +710,7 @@ while true ; do
 		    shift ;;
 	--deploy-script) _deploy_script; shift;;
 	--exec-sql) _exec_sql; shift;;
+	--exec-menusql) _exec_menusql; shift;;
 	--all)  _template_all ; shift ;;
 	--template)  _template; shift;;
 	--template-modify)  _template_modify; shift;;
@@ -679,6 +732,7 @@ while true ; do
 	--ws-template-importdata)  _ws_template_importdata; shift;;
 	--template-ws-getreportdata)  _template_ws_getreportdata; shift;;
 	--template-sql)  _template_sql; shift;;
+	--template-menusql)  _template_menusql; shift;;
         --)             break ;;
         *)              __show_help;   break ;;
     esac
