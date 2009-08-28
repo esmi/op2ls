@@ -108,7 +108,7 @@ EOF
 }
 tailer_ws_template_savenew() {
 cat <<-EOF
-'rst1("CreatorID").value = Session("s_EmplID")
+'RST1("CREATORID").VALUE = SESSION("S_EMPLID")
 'rst1("CreateDeptID").value = Session("s_EmplDeptID")
 'rst1("CreateDate").value = objPublic.GetServerNowUTC
 'rst1("ModifierID").value = Session("s_EmplID")
@@ -166,7 +166,7 @@ EOF
 ws_template_savenew() {
     header_ws_template_savenew
 
-    field_ws_template_savenew | sed "s/##FieldName_#/$(echo $PKEY)/g"
+    #field_ws_template_savenew | sed "s/##FieldName_#/$(echo $PKEY)/g"
     for fd in $(echo $FIELDS ) ; do
 	FieldName=$(echo $fd | gawk -F "/" '{print $1}')
 	FieldShowType=$(echo $fd | gawk -F "/" '{print $2}')

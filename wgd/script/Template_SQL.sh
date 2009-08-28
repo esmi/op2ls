@@ -36,7 +36,7 @@ table_body() {
 	if [ "$datatype". = "bigint". ] ; then
 	    datalength=""
 	fi
-	echo 1>&2 \[$fieldname\] \[$datatype\] '('$datalength')' $isnull NULL ,
+	#echo 1>&2 \[$fieldname\] \[$datatype\] '('$datalength')' $isnull NULL ,
 	echo -n \[$fieldname\] \[$datatype\] $datalength $isnull NULL $DEFAULT_VAL,
     done
 }
@@ -147,12 +147,14 @@ EOF
 program_sql() {
     local ProgID=$TEMPLATE
     local Priority=20
-    local ModuleID=$GD_ModuleID
-    local CategoryID=0051
-    local ProgNameENG=$TEMPLATE
-    local ProgNameCHT=$TEMPLATE
-
-    local ProgNameCHS=$TEMPLATE
+    local ModuleID=$PRG_MODULE
+    local CategoryID="$PRG_CATE"
+    #local ProgNameENG=$TEMPLATE
+    #local ProgNameCHT=$TEMPLATE
+    #local ProgNameCHS=$TEMPLATE
+    local ProgNameENG=$(echo $PRG_NAME| gawk -F '/' '{print $1}')
+    local ProgNameCHT=$(echo $PRG_NAME| gawk -F '/' '{print $2}')
+    local ProgNameCHS=$(echo $ProgNameCHT| iconv -f utf-8 -t big5 | autogb | iconv -f gb2312 -t utf-8)
     local ParentProgID=""
     local IsDisplay=1
     local IsLog=0
@@ -164,6 +166,10 @@ program_sql() {
     local ExtNotes=""
     local chkflag=0
 
+    if [ "$PRG_PRIORITY". != "". ] ; then
+	Priority=$PRG_PRIORITY
+    fi
+
     echo delete from Program where ProgID=\'$ProgID\'
     echo go
     echo insert into Program \
@@ -171,9 +177,9 @@ program_sql() {
 	    $Priority, \
 	    \'$ModuleID\', \
 	    \'$CategoryID\', \
-	    \'$ProgNameENG\', \
-	    \'$ProgNameCHT\', \
-	    \'$ProgNameCHS\', \
+	    N\'$ProgNameENG\', \
+	    N\'$ProgNameCHT\', \
+	    N\'$ProgNameCHS\', \
 	    \'$ParentProgID\', \
 	    $IsDisplay, \
 	    $IsLog, \
@@ -195,7 +201,8 @@ local TableFD="$FIELDS"
 local priority=0
 for ft in $TableFD ; do
 
-    local priority=$(expr $priority + 10)
+	priority=$(expr $priority + 10)
+
     local fieldname=$(echo $ft | gawk -F '/' '{print $1}' )
     local datatype=$(echo $ft | gawk -F '/' '{print $3}' )
     
@@ -293,6 +300,17 @@ template_sql() {
     echo use $GD_DATABASE
     table_sql
     table_function
+
+    #userview_sql
+    #program_sql
+    #programfields_sql 
+    #perm_template_detail
+}
+template_menusql() {
+    echo use $GD_DATABASE
+    #table_sql
+    #table_function
+
     userview_sql
     program_sql
     programfields_sql 

@@ -291,7 +291,7 @@ function Exit() {         //離開
     }
 }
 EOF
-if [ "$IS_ATTACH" = "TRUE". ] ; then
+if [ "$IS_ATTACH". = "TRUE". ] ; then
 cat <<-EOF
 function ShowAttach() {
     sys_ShowAttachment("${TEMPLATE}",g_strProgID);

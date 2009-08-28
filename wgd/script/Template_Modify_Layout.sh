@@ -114,9 +114,9 @@ fi
 template_modify_layout() {
 
     header_modify_layout
-    if [ "$KEY_MULTY". = "". ] ; then
-	pkey_modify_layout | sed "s/##PKEY_#/`echo $PKEY`/g"
-    fi
+    #if [ "$KEY_MULTY". = "". ] ; then
+	#pkey_modify_layout | sed "s/##PKEY_#/`echo $PKEY`/g"
+    #fi
     folder_tag_modify_layout
     field_header_modify_layout
     for fd in $(echo $FIELDS ) ; do
