@@ -32,7 +32,7 @@ _name=`basename $0`
 function fetch_news() {
     local i=1
     #local sleep_t=30m
-    local sleep_t=10s
+    local sleep_t=10m
     local times=3
     local abort=false
     echo DGT procedure starting.....
