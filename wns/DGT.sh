@@ -52,7 +52,9 @@ __fetch_detail_DGT() {
 }
 
 function login_to_DGT() {
-    #set +e    
+
+    rm -f DGTERR
+#set +e    
     DGT_MYID="`echo -n $DGT_ACT | perl -MURI::Escape -ne 'print uri_escape($_);'`"
     DGT_LOGIN_URL="$DGT_URL/$DGT_LOCAL_SIGN_URL?ToUrl=/tw/default.asp?"
 
@@ -72,6 +74,17 @@ function login_to_DGT() {
 
     echo RET_CODE: $RET_CODE
     _logging "$FUNCNAME(): leave LOGIN CHECK SITE."  "URL return code: $RET_CODE"
+   
+    #cat *log2/DGT_LOGIN.header | grep -i Location | grep -i loginerror 
+    
+    DGT_LOGIN_STRING="`cat $DGT_LOGIN_HEADER | grep -i ^Location.*loginerror`"
+    if [ "$DGT_LOGIN_STRING". == "". ] ; then
+	_logging "DGT LOGIN SITE SUCCESSFULLY(OOOOOOKKKKKKK)."
+    else
+	_logging "DGT LOGIN SITE FAILURE(XXXXXXXXX).........."
+	touch DGTERR
+	exit 1
+    fi
     #set -e
 }
 
