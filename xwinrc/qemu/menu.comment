@@ -1,3 +1,0 @@
-#"IPCOP"  exec "cygstart --hide /usr/bin/bash --rcfile  /usr/src/qemu/ipcop/ipcop-x.sh"
-#"UBUNTU" exec "cygstart --hide /usr/bin/bash --rcfile  /usr/src/qemu/ubuntu/ubuntu-x.sh"
-
