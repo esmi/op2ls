@@ -74,6 +74,9 @@ __select_fields() {
     local fdn=""
     local lastfd=$(echo $(__attach_fields) | sed 's/^.*,//g')
     local tailer=", "
+    if [ "$IS_CHECK_KEY_MULTY". = "TRUE". ] ; then
+	echo -n $KEY_MULTY","
+    fi
     #strSQL = "Select ${KEY_MULTY}, $(__attach_fields) from [$(__wksheet)$]"
     for fd in $(echo $(__attach_fields) | sed 's/,/ /g') ; do
 	if [ $fd = $lastfd ] ; then tailer="" ; fi
