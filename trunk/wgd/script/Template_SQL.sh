@@ -65,7 +65,6 @@ GO
 EOF
 fi
 }
-
 table_function_filter() {
 if [ "$KEY_TYPE". = "MULTY_KEY". ] ; then
     PROCESS_KEY="`echo $KEY_MULTY | sed 's/,/ /g'`"
@@ -136,14 +135,12 @@ cat <<-EOF
 GO
 EOF
 }
-
 userview_sql() {
 cat <<-EOF
 	delete from UserViewDetail where ProgID='${TEMPLATE}'
 	delete from UserViewDefine where ProgID='${TEMPLATE}'
 EOF
 }
-
 program_sql() {
     local ProgID=$TEMPLATE
     local Priority=20
@@ -208,7 +205,8 @@ for ft in $TableFD ; do
     
     local fieldtitleeng=$(echo $ft | gawk -F '/' '{print $6}' )
     local fieldtitlecht=$(echo $ft | gawk -F '/' '{print $7}' )
-    local fieldtitlechs=$(echo $ft | gawk -F '/' '{print $8}' )
+    #local fieldtitlechs=$(echo $ft | gawk -F '/' '{print $8}' )
+    local fieldtitlechs=$(echo $fieldtitlecht| iconv -f utf-8 -t big5 | autogb | iconv -f gb2312 -t utf-8)
 
     local ProgID=$TEMPLATE
     local Priority="$priority"
@@ -233,9 +231,9 @@ for ft in $TableFD ; do
 	\'$Fieldname\', \
 	$IsMultiLang, \
 	\'$DialogWindow\', \
-	\'$FieldTitleENG\', \
-	\'$FieldTitleCHT\', \
-	\'$FieldTitleCHS\', \
+	N\'$FieldTitleENG\', \
+	N\'$FieldTitleCHT\', \
+	N\'$FieldTitleCHS\', \
 	\'$DataType\', \
 	\'$CanSorted\', \
 	$CanQuery, \
@@ -296,6 +294,41 @@ perm_template_detail() {
     \)
 }
 
+resource_sql() {
+    local TableFD="$FIELDS"
+    local priority=100
+    local id=1
+
+    echo delete Resource \
+	     where Category = \'$TEMPLATE\' 
+    echo 'declare @i nvarchar(6)'
+    echo 'set @i = (select max(ID)  from resource)'
+
+    for ft in $TableFD ; do
+
+	priority=$(expr $priority + 10)
+
+	local fdname=$(echo $ft | gawk -F '/' '{print $1}' )
+	local fdstyle=$(echo $ft | gawk -F '/' '{print $2}' )
+	local resname=$(echo $ft | gawk -F '/' '{print $14}' )
+    
+	local fdeng=$(echo $ft | gawk -F '/' '{print $6}' )
+        local fdcht=$(echo $ft | gawk -F '/' '{print $7}' )
+	local fdchs=$(echo $fdcht| iconv -f utf-8 -t big5 | autogb | iconv -f gb2312 -t utf-8)
+	if [ "$resname". != "-". ] ; then
+	    if [ "$fdstyle". != "System". ] ;then
+		echo 'set @i=@i+1'
+		echo insert Resource \
+		     values  \( \
+			'@i', \
+			\'$TEMPLATE\', $priority, \
+			\'$(echo $resname |tr [:lower:] [:upper:] )\', N\'$fdeng\', N\'$fdcht\', N\'$fdchs\', \
+		        1, 0 \)
+	    fi
+	fi
+    done
+}
+
 template_sql() {
     echo use $GD_DATABASE
     table_sql
@@ -315,4 +348,10 @@ template_menusql() {
     program_sql
     programfields_sql 
     perm_template_detail
+}
+template_ressql() {
+
+    echo use $GD_DATABASE
+    resource_sql
+
 }

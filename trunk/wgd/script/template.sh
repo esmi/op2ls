@@ -170,25 +170,24 @@ _template_modify_layout() {
     template_modify_layout >  $_output/"$TEMPLATE"_Modify_Layout.asp
 }
 _template_new() {
-echo create  $_output/"$TEMPLATE"_New.asp
-cat "$PATTERN"/Template_New.asp | \
-    sed -e "s/##Template_#/$(echo $TEMPLATE)/g" \
-	-e "s/##PKEY_#/$(echo $PKEY)/g" \
-	-e "s/##Location_#/$(echo $LOCATION)/g" \
-        >  $_output/"$TEMPLATE"_New.asp
+#echo create  $_output/"$TEMPLATE"_New.asp
+#cat "$PATTERN"/Template_New.asp | \
+#    sed -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+#	-e "s/##PKEY_#/$(echo $PKEY)/g" \
+#	-e "s/##Location_#/$(echo $LOCATION)/g" \
+#        >  $_output/"$TEMPLATE"_New.asp
+    echo create  $_output/"$TEMPLATE"_New.asp
+    source "$INCLUDE"/Template_New.sh
+    template_new | \
+        sed -e "s/##Template_#/$(echo $TEMPLATE)/g" \
+	    -e "s/##PKEY_#/$(echo $PKEY)/g" \
+	    -e "s/##Location_#/$(echo $LOCATION)/g" \
+	    >  $_output/"$TEMPLATE"_New.asp
 }
 _template_new_layout() {
     echo create  $_output/"$TEMPLATE"_New_Layout.asp
     source "$INCLUDE"/Template_New_Layout.sh
     template_new_layout >  $_output/"$TEMPLATE"_New_Layout.asp
-}
-_template_printdata() {
-echo create $_output/"$TEMPLATE"_PrintData.asp
-cp "$PATTERN"/Template_PrintData.asp  $_output/"$TEMPLATE"_PrintData.asp
-}
-_template_report() {
-echo create $_output/"$TEMPLATE"_Report.asp
-cp "$PATTERN"/Template_Report.asp  $_output/"$TEMPLATE"_Report.asp
 }
 _template_script_savemodify() {
     echo create $_output/Script_SaveModify.asp
@@ -218,10 +217,6 @@ _toolbar_modify() {
     echo create $_output/Toolbar_Modify.asp
     source "$INCLUDE"/Toolbar_Modify.sh
     toolbar_modify > $_output/Toolbar_Modify.asp
-}
-_template_toolbar_new() {
-echo create $_output/Toolbar_New.asp
-cp  "$PATTERN"/Template_Toolbar_New.asp  $_output/Toolbar_New.asp
 }
 _template_script_savenew() {
     echo create  $_output/Script_SaveNew.asp
@@ -269,17 +264,29 @@ _ws_template_savenew() {
 	    -e "s/##Template_#/$(echo $TEMPLATE)/g" \
 	   >  $_output/ws_"$TEMPLATE"_SaveNew.asp
 }
-_template_ws_getreportdata() {
-echo create $_output/ws_GetReportData.asp
-cp  "$PATTERN"/Template_ws_GetReportData.asp  $_output/ws_GetReportData.asp
-}
-
 _ws_template_importdata() {
     if [ "$IS_IMPORT". == "TRUE". ] ; then
 	echo create $_output/ws_"$TEMPLATE"_ImportData.asp
         source "$INCLUDE"/ws_Template_ImportData.sh
 	ws_template_importdata > $_output/ws_"$TEMPLATE"_ImportData.asp
     fi
+}
+
+_template_printdata() {
+echo create $_output/"$TEMPLATE"_PrintData.asp
+cp "$PATTERN"/Template_PrintData.asp  $_output/"$TEMPLATE"_PrintData.asp
+}
+_template_report() {
+echo create $_output/"$TEMPLATE"_Report.asp
+cp "$PATTERN"/Template_Report.asp  $_output/"$TEMPLATE"_Report.asp
+}
+_template_toolbar_new() {
+echo create $_output/Toolbar_New.asp
+cp  "$PATTERN"/Template_Toolbar_New.asp  $_output/Toolbar_New.asp
+}
+_template_ws_getreportdata() {
+echo create $_output/ws_GetReportData.asp
+cp  "$PATTERN"/Template_ws_GetReportData.asp  $_output/ws_GetReportData.asp
 }
 _template_sql() {
     source "$INCLUDE"/Template_SQL.sh
@@ -290,8 +297,14 @@ _template_sql() {
 _template_menusql() {
     source "$INCLUDE"/Template_SQL.sh
     local script=$_output/"$TEMPLATE".menu.sql
-    echo create sql script: $script
+    echo create menusql script: $script
     template_menusql > $script
+}
+_template_ressql() {
+    source "$INCLUDE"/Template_SQL.sh
+    local script=$_output/"$TEMPLATE".res.sql
+    echo create resource script: $script
+    template_ressql > $script
 }
 _template_all() {
 _template
@@ -384,7 +397,7 @@ if [ -e $XLS_schema ] ; then
 #1       /2       /3       /4   /5     /6      /7       /8       /9         /10        
 #欄位名稱/欄位型態/資料型態/長度/isNull/ENGName/繁體名稱/简体名称/新增時顯示/新增時唯讀
 #/11        /12        /13    /14      /15 /16  /17          /18
-#/修改時顯示/修改時唯讀/預設值/資源名稱/KEY/開窗/開窗資料來源/欄位說明"
+#/修改時顯示/修改時唯讀/預設值/資源名稱/KEY/開窗/開窗資料來源/欄位說明(AltField: for openwin)"
 
 #順序對應
 #Script:             1 | 2 | 3 | 4 | 5 |  6 |  7 |  8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18
@@ -403,7 +416,7 @@ _exec_sql() {
 cat <<-EOF
 # Execute "$_output/$TEMPLATE.sql" to server: $SQLSRV, database: $SQLDB
 # to create "$TEMPLATE" table, "fn_DATA_$TEMPLATE" function
-sqlcmd -S $SQLSRV -U $SQLUSR -d $SQLDB \
+sqlcmd -S $SQLSRV -U $SQLUSR -P XXXXX -d $SQLDB \
     -f 65001 -i "$_output/$TEMPLATE.sql" 2>&1 | piconv -f big5 -t utf-8
 EOF
 sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB \
@@ -415,12 +428,20 @@ _exec_menusql() {
 cat <<-EOF
 # Execute "$_output/$TEMPLATE.menu.sql" to server: $SQLSRV, database: $SQLDB to create "$TEMPLATE" menu.
 # add data to "Program" and "ProgramField" tables.
-sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB -f 65001 -i "$_output/$TEMPLATE.menu.sql" 2>&1 | piconv -f big5 -t utf-8
+sqlcmd -S $SQLSRV -U $SQLUSR -P XXXXX -d $SQLDB -f 65001 -i "$_output/$TEMPLATE.menu.sql" 2>&1 | piconv -f big5 -t utf-8
 EOF
 sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB \
     -f 65001 -i "$_output/$TEMPLATE.menu.sql" 2>&1 | piconv -f big5 -t utf-8
 }
+_exec_ressql() {
 
+cat <<-EOF
+# Execute "$_output/$TEMPLATE.res.sql" to server: $SQLSRV, database: $SQLDB to create "$TEMPLATE" resource.
+sqlcmd -S $SQLSRV -U $SQLUSR -P XXXXX -d $SQLDB -f 65001 -i "$_output/$TEMPLATE.res.sql" 2>&1 | piconv -f big5 -t utf-8
+EOF
+sqlcmd -S $SQLSRV -U $SQLUSR -P $SQLPWD -d $SQLDB \
+    -f 65001 -i "$_output/$TEMPLATE.res.sql" 2>&1 | piconv -f big5 -t utf-8
+}
 
 _project_build() {
 
@@ -466,6 +487,7 @@ _project_build() {
 		    if [ -e cfg/$tablename.cfg ] ; then
 			echo "#template --cfg cfg/$tablename.cfg --template-menusql"
 			template --cfg cfg/$tablename.cfg --template-menusql
+			#template --cfg cfg/$tablename.cfg --template-ressql
 		    else
 			echo Warning...cfg/$tablename.cfg not exist, building abort.
 		    fi
@@ -509,6 +531,7 @@ _project_build() {
 			echo "# exec Project:$PROJECT, Table: $tablename menusql code to target dbhost."
 			echo template --cfg cfg/$tablename.cfg --exec-menusql
 			template --cfg cfg/$tablename.cfg --exec-menusql
+			#template --cfg cfg/$tablename.cfg --exec-ressql
 		    else
 			echo Warning...cfg/$tablename.cfg not exist, building abort.
 		    fi
@@ -539,16 +562,16 @@ TEMPLATE-ACTIONS:
     --template-modify: create Table_Modify script.	--template-modify-layout: Table_Modify_Layout.
     --toolbar-modify: create Toolbar_Modify script.	--ws-template-savemodify: ws_Table_SaveModify.
     --template-script-savemodify: Script_SaveModify.    
-
     --template-new: create Table_New script.		--template-new-layout: create Talbe_New_Layout script.
     --template-toolbar-new: create Toolbar_New script.	--ws-template-savenew: ws_Table_SaveNew .
     --template-script-savenew: create Script_SaveNew.
 
     --ws-template-data:	      ws_Table_Data script.     --ws-template-modifydata: ws_Table_ModifyData.
     --ws-template-delete:     ws_Table_Delete script.   --ws-template-importdata: ws_Table_importdata. 
-
     --template-printdata: Talbe-PrintData script.	--template-report: create Table_Report script.
     --template-ws-getreportdata: ws_GetReportData.	--template-sql: create template sql script.
+    --template-menusql: create template menu sql script --exec-menusql: exec template.menu.sql to create menu on db.
+    --template-ressql: create template resource sql.	--exec-ressql: exec template.res.sql to create resource.
 build:
     --project <prj_a prj_b> : define project.	
     --relation <rlta1 rlt2 rlt3,rltb1 rltb2 rltb3>: redfine relations for project a and b.
@@ -576,8 +599,9 @@ template-sql"
 WS_OP="ws-template-modifydata,ws-template-importdata,ws-template-delete,ws-template-data"
 BUILD_OP="build,project:,relation:,define:"
 MENU_OP="template-menusql,exec-menusql"
+RES_OP="template-ressql,exec-ressql"
 #echo $GEN_OP
-ALL_OP="$GEN_OP,$WS_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG,$BUILD_OP,$MENU_OP"
+ALL_OP="$GEN_OP,$WS_OP,$COMMON_OP,$ABORT_OP,$CREATE_CFG,$BUILD_OP,$MENU_OP,$RES_OP"
 orig_command="$@"
 OPT=`getopt -o "" --longoptions=$ALL_OP -- "$@"`
 #orig_command="$*"
@@ -714,6 +738,7 @@ while true ; do
 	--deploy-script) _deploy_script; shift;;
 	--exec-sql) _exec_sql; shift;;
 	--exec-menusql) _exec_menusql; shift;;
+	--exec-ressql) _exec_ressql; shift;;
 	--all)  _template_all ; shift ;;
 	--template)  _template; shift;;
 	--template-modify)  _template_modify; shift;;
@@ -736,6 +761,7 @@ while true ; do
 	--template-ws-getreportdata)  _template_ws_getreportdata; shift;;
 	--template-sql)  _template_sql; shift;;
 	--template-menusql)  _template_menusql; shift;;
+	--template-ressql)  _template_ressql; shift;;
         --)             break ;;
         *)              __show_help;   break ;;
     esac
