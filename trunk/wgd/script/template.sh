@@ -306,6 +306,32 @@ _template_ressql() {
     echo create resource script: $script
     template_ressql > $script
 }
+
+_template_openwin() {
+
+    echo openwin variable example: '$IS_OPENWIN_CODE=TRUE;$OW_SQL_FDS="FD1/RES1 FD2/RES2 FD3/RES3 ...'
+
+    if [ "$IS_OPENWIN_CODE". = "TRUE". ] ; then
+	echo '$IS_OPENWIN_CODE='$IS_OPENWIN_CODE
+	echo '$OW_SQL_FDS='$OW_SQL_FDS
+
+	source "$INCLUDE"/openwin/sys_ChoiceTemplate_C.js.sh  
+	source "$INCLUDE"/openwin/sys_SelectTemplate.asp.sh
+	source "$INCLUDE"/openwin/ws_ListTemplate_S.asp.sh
+
+	mkdir -p $_output/lib
+
+	script=$_output/lib/sys_Choice${TEMPLATE}_C.js
+	echo create script: $script
+	_sys_ChoiceTemplate_C_js > $_output/lib/sys_Choice${TEMPLATE}_C.js
+	script=$_output/lib/sys_Select${TEMPLATE}.asp
+	echo create script: $script
+	_sys_SelectTemplate_asp  > $_output/lib/sys_Select${TEMPLATE}.asp
+	script=$_output/lib/ws_List${TEMPLATE}_S.asp
+	echo create script: $script
+	_ws_ListTemplate_S_asp > $_output/lib/ws_List${TEMPLATE}_S.asp
+    fi	
+}
 _template_all() {
 _template
 _template_modify
@@ -326,6 +352,7 @@ _ws_template_savemodify
 _ws_template_savenew
 _ws_template_importdata
 _template_ws_getreportdata
+_template_openwin
 #_template_sql
 }
 _deploy_script() {
@@ -564,7 +591,7 @@ TEMPLATE-ACTIONS:
     --template-script-savemodify: Script_SaveModify.    
     --template-new: create Table_New script.		--template-new-layout: create Talbe_New_Layout script.
     --template-toolbar-new: create Toolbar_New script.	--ws-template-savenew: ws_Table_SaveNew .
-    --template-script-savenew: create Script_SaveNew.
+    --template-script-savenew: create Script_SaveNew.	--template-openwin: 
 
     --ws-template-data:	      ws_Table_Data script.     --ws-template-modifydata: ws_Table_ModifyData.
     --ws-template-delete:     ws_Table_Delete script.   --ws-template-importdata: ws_Table_importdata. 
@@ -595,7 +622,7 @@ CREATE_CFG="create-cfg,wks-name:,schema-path:,schema-file:"
 GEN_OP="template,template-modify,template-modify-layout,template-new,template-new-layout,\
 template-printdata,template-report,template-script-savemodify,toolbar-list,\
 toolbar-modify,template-toolbar-new,template-script-savenew,template-ws-getreportdata,\
-template-sql"
+template-sql,template-openwin"
 WS_OP="ws-template-modifydata,ws-template-importdata,ws-template-delete,ws-template-data"
 BUILD_OP="build,project:,relation:,define:"
 MENU_OP="template-menusql,exec-menusql"
@@ -762,6 +789,7 @@ while true ; do
 	--template-sql)  _template_sql; shift;;
 	--template-menusql)  _template_menusql; shift;;
 	--template-ressql)  _template_ressql; shift;;
+	--template-openwin)  _template_openwin; shift;;
         --)             break ;;
         *)              __show_help;   break ;;
     esac

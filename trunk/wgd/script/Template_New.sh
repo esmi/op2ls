@@ -120,9 +120,6 @@ cat <<-EOF
 <script language='jscript.encode' src='/GDCRM/library/sys_IsInteger_C.js'></script>
 <!--#include virtual='/GDCRM/Library/sys_DateTime_Const.asp' -->
 <script language='jscript.encode'  src='/GDCRM/Library/sys_DateTime_C.js'></script>
-<script language='jscript.encode' src='/GDCRM/library/sys_ChoiceDate_C.js'></script>
-<script language='jscript.encode' src='/GDCRM/Library/sys_ChoiceDepartment_C.js'></script>
-<script language='jscript.encode' src='/GDCRM/library/HSS/sys_ChoiceBalanceID_C.js'></script>
 
 <!-- 更秨怠琩高そノㄧ计のMessage-->
 <script language='jscript.encode'>
@@ -133,8 +130,37 @@ cat <<-EOF
 </script>
 
 <!-- 更秨怠琩高そノㄧ计-->
-<script language='jscript.encode' src='/GDCRM/library/sys_ChoiceEmployee_C.js'>//** Employee </script>
+EOF
+    for fd in $(echo $FIELDS ) ; do
+	IsOpenWIN=$(echo $fd | gawk -F "/" '{print $16}')
+	ResOpenWIN=$(echo $fd | gawk -F "/" '{print $17}'| sed 's/:.*$//g')
+	ModuleOpenWIN=$(echo $fd | gawk -F "/" '{print $17}'| sed 's/^.*://g')
+	AltField=$(echo $fd | gawk -F "/" '{print $18}')
+        isAddDisplay=$(echo $fd | gawk -F "/" '{print $9}')
 
+
+	if [[ ! "$isAddDisplay". = "N". ]]; then
+	    if [ "$IsOpenWIN". = "Y". ] ; then
+		if [ "$ModuleOpenWIN". = "". ] ; then
+		    ModulePath=""
+		else
+		    ModulePath="$ModuleOpenWIN/"
+		fi
+cat <<EOF	    
+<script language='jscript.encode' src='/GDCRM/library/${ModulePath}sys_Choice${ResOpenWIN}_C.js'></script>
+EOF
+	    fi
+	fi
+    done
+#openwin_lib_template_new
+#cat <<EOF
+#<script language='jscript.encode' src='/GDCRM/library/sys_ChoiceDate_C.js'></script>
+#<script language='jscript.encode' src='/GDCRM/Library/sys_ChoiceDepartment_C.js'></script>
+#<script language='jscript.encode' src='/GDCRM/library/HSS/sys_ChoiceBalanceID_C.js'></script>
+#EOF
+#<script language='jscript.encode' src='/GDCRM/library/sys_ChoiceEmployee_C.js'>//** Employee </script>
+
+cat <<EOF
 <!-- Start of 祘ΑGlobal跑计砞﹚-->
 <script language='jscript.encode'>
 //夹非Global跑计﹚竡
