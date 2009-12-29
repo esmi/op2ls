@@ -954,8 +954,8 @@ while true ; do
 		    #echo debug number: $DEBUG
 		    DEBUG=$2 ;	shift 2    ;;
             esac 
-	    if [ $DEBUG -eq 0 ] ; then      VERBOSE="--silent --show-error" ;	    fi
-	    if [ "$DEBUG" -ge 200 ] ; then  VERBOSE="--silent --show-error" ; 	    fi
+	    if [ $DEBUG -eq 0 ] ; then      VERBOSE="--silent --show-error  --connect-timeout 20" ;	    fi
+	    if [ "$DEBUG" -ge 200 ] ; then  VERBOSE="--silent --show-error  --connect-timeout 20" ; 	    fi
 	    echo DEBUG: $DEBUG, VERBOSE: $VERBOSE
 	    ;;
 	--version|-v)	__show_version; shift	    ;;
