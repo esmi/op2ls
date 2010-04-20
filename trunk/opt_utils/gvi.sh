@@ -30,10 +30,7 @@ gvi_debug $options
 
 if [ "$options". = true. ] ; then
     echo $FILE_COUNT
-#   $GVI -u "`cygpath -w ~/.vimrc`" \
-#			-p$FILE_COUNT \
-#			`cygpath -w $*` &
-    $GVI -u "`cygpath -w ~/.vimrc`"  -p \
+    $GVI -v -C -u "`cygpath -w ~/.vimrc`"  -p \
 			`cygpath -w $*` &
 else
     $GVI -u "`cygpath -w ~/.vimrc`" $* &
